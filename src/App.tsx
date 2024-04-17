@@ -33,6 +33,8 @@ import FormUnidadeSaude from "./components/pages/UnidadeSaude/form";
 
 //importar assets/styles.css
 import "./assets/styles.css";
+import TipoEstabelecimento from "./components/pages/TipoEstabelecimento";
+import FormTipoEstabelecimento from "./components/pages/TipoEstabelecimento/form";
 
 const App: React.FC = () => {
     return (
@@ -57,6 +59,8 @@ const App: React.FC = () => {
                 <Route path="/responsaveis/form" element={<FormResponsaveis />} />
                 <Route path="/series" element={<Series />} />
                 <Route path="/series/form" element={<FormSeries />} />
+                <Route path="/tipos-estabelecimentos" element={<TipoEstabelecimento />} />
+                <Route path="/tipos-estabelecimentos/form" element={<FormTipoEstabelecimento />} />
                 <Route path="/usuarios" element={<Usuarios />} />
                 <Route path="/usuarios/form" element={<FormUsuarios />} />
                 <Route path="/medicamentos" element={<Medicamentos />} />

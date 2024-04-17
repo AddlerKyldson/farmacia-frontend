@@ -73,7 +73,68 @@
     background-color: #00cc66;
 }
 
-.btn:hover{
+.btn:hover {
     /* deixar o botão mais escuro */
     filter: brightness(79%);
+}
+
+/* Estrutura */
+
+.col-md-2 {
+    width: 16.66666667%;
+    float: left;
+}
+
+.col-md-3 {
+    width: 25%;
+    float: left;
+}
+
+.col-md-4 {
+    width: 33.33333333%;
+    float: left;
+}
+
+.col-md-5 {}
+
+.col-md-6 {
+    width: 50%;
+    float: left;
+}
+
+.col-md-7 {
+    width: 58.33333333%;
+    float: left;
+}
+
+.col-md-8{
+    width: 66.66666667%;
+    float: left;
+}
+
+.col-md-10 {
+    width: 83.33333333%;
+    float: left;
+}
+
+.col-md-12 {
+    width: 100%;
+    float: left;
+}
+
+/* GRID */
+.justify-content-center {
+    justify-content: center;
+}
+
+.justify-content-end {
+    justify-content: flex-end;
+}
+
+.justify-content-between {
+    justify-content: space-between;
+}
+
+.justify-content-start {
+    justify-content: flex-start;
 }

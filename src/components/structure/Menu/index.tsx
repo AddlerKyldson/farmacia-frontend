@@ -68,6 +68,9 @@ const Menu: React.FC = () => {
                         <SubMenuItem>
                             <MenuLink href="/series">{"Séries"}</MenuLink>
                         </SubMenuItem>
+                        <SubMenuItem>
+                            <MenuLink href="/tipos-estabelecimentos">{"Tipos de Estabelecimentos"}</MenuLink>
+                        </SubMenuItem>
                     </SubMenu>
                 )}
                 {/* Continuação de outros itens do menu */}
