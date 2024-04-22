@@ -7,9 +7,10 @@ interface CampoTextoProps {
     className?: string;
     onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
     name: string;
+    value?: any;
 }
 
-const CampoTexto: React.FC<CampoTextoProps> = ({ label, name, tipo, className, onChange }) => {
+const CampoTexto: React.FC<CampoTextoProps> = ({ label, value, name, tipo, className, onChange }) => {
     return (
         <ContainerCampoTexto className={className}>
             <Label>{label}</Label>
@@ -22,6 +23,7 @@ const CampoTexto: React.FC<CampoTextoProps> = ({ label, name, tipo, className, o
 
             }
                 name={name}
+                value={value}
             />
         </ContainerCampoTexto>
     );

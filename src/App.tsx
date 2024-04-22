@@ -35,12 +35,14 @@ import FormUnidadeSaude from "./components/pages/UnidadeSaude/form";
 import "./assets/styles.css";
 import TipoEstabelecimento from "./components/pages/TipoEstabelecimento";
 import FormTipoEstabelecimento from "./components/pages/TipoEstabelecimento/form";
+import LoginPage from "./components/pages/Login";
 
 const App: React.FC = () => {
     return (
         <BrowserRouter>
             <Routes>
                 <Route path="/" element={<Home />} />
+                <Route path="/login" element={<LoginPage />} />
                 <Route path="/estabelecimentos" element={<Estabelecimentos />} />
                 <Route path="/estabelecimentos/form" element={<FormularioEstabelecimentos />} />
                 <Route path="/bairros" element={<Bairros />} />
@@ -63,6 +65,7 @@ const App: React.FC = () => {
                 <Route path="/tipos-estabelecimentos/form" element={<FormTipoEstabelecimento />} />
                 <Route path="/usuarios" element={<Usuarios />} />
                 <Route path="/usuarios/form" element={<FormUsuarios />} />
+                <Route path="/usuarios/form/:id" element={<FormUsuarios />} />
                 <Route path="/medicamentos" element={<Medicamentos />} />
                 <Route path="/medicamentos/form" element={<FormMedicamentos />} />
                 <Route path="/medicamentos/entradas" element={<EntradasMedicamentos />} />

@@ -12,9 +12,10 @@ interface CampoSelectProps {
     className?: string;
     onChange?: (e: React.ChangeEvent<HTMLSelectElement>) => void;
     name: string;
+    value?: string;
 }
 
-const CampoSelect: React.FC<CampoSelectProps> = ({ label, name, options, className, onChange }) => {
+const CampoSelect: React.FC<CampoSelectProps> = ({ label, value, name, options, className, onChange }) => {
     return (
         <ContainerCampoSelect className={className}>
             <Label>{label}</Label>
@@ -25,10 +26,13 @@ const CampoSelect: React.FC<CampoSelectProps> = ({ label, name, options, classNa
                     }
                 }
             }
-            name={name}
+                name={name}
+                defaultValue={value}
             >
                 {options.map((option, index) => (
-                    <option key={index} value={option.value}>{option.label}</option>
+                    <option key={index} value={option.value} >
+                        {option.label}
+                    </option>
                 ))}
             </Input>
         </ContainerCampoSelect>
