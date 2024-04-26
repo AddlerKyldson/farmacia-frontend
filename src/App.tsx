@@ -47,16 +47,20 @@ const App: React.FC = () => {
                 <Route path="/estabelecimentos/form" element={<FormularioEstabelecimentos />} />
                 <Route path="/bairros" element={<Bairros />} />
                 <Route path="/bairros/form" element={<FormBairros />} />
+                <Route path="/bairros/form/:id" element={<FormBairros />} />
                 <Route path="/cidades" element={<Cidades />} />
                 <Route path="/cidades/form" element={<FormCidades />} />
+                <Route path="/cidades/form/:id" element={<FormCidades />} />
                 <Route path="/estados" element={<Estados />} />
                 <Route path="/estados/form" element={<FormEstados />} />
+                <Route path="/estados/form/:id" element={<FormEstados />} />
                 <Route path="/cidadaos" element={<Cidadaos />} />
                 <Route path="/cidadaos/form" element={<FormCidadaos />} />
                 <Route path="/inspecoes" element={<Inspecoes />} />
                 <Route path="/inspecoes/form" element={<FormInspecoes />} />
                 <Route path="/regionais" element={<Regionais />} />
                 <Route path="/regionais/form" element={<FormRegionais />} />
+                <Route path="/regionais/form/:id" element={<FormRegionais />} />
                 <Route path="/responsaveis" element={<Responsaveis />} />
                 <Route path="/responsaveis/form" element={<FormResponsaveis />} />
                 <Route path="/series" element={<Series />} />
@@ -74,6 +78,7 @@ const App: React.FC = () => {
                 <Route path="/medicamentos/saidas/form" element={<FormSaidasMedicamentos />} />
                 <Route path="/unidades-de-saude" element={<UnidadeSaude />} />
                 <Route path="/unidades-de-saude/form" element={<FormUnidadeSaude />} />
+                <Route path="/unidades-de-saude/form/:id" element={<FormUnidadeSaude />} />
             </Routes>
         </BrowserRouter>
     );

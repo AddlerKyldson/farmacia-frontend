@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Layout from "../../structure/Layout";
 import Breadcrumb from "../../other/breadCrumb";
 import Titulo from "../../other/tituloPage";
@@ -8,12 +8,20 @@ import CampoSelect from "../../other/form/campoSelect";
 import BotaoSubmit from "../../other/form/botaoSubmit";
 import Row from "../../other/grid/row";
 import Alert from "../../other/modal/alert";
+import axios from "axios";
+import server from "../../../utils/data/server";
 
 const FormCidades: React.FC = () => {
+    const [Id, setId] = useState(0);
     const [formData, setFormData] = useState({
         nome: '',
-        estado: '',
+        id_Estado: '',
+        id_Regional: '',
+        slug: ''
     });
+
+    const [Estados, setEstados] = useState<any[]>([]);
+    const [Regionais, setRegionais] = useState<any[]>([]);
 
     //configura exibição do Alert
     const [alert, setAlert] = useState({
@@ -25,6 +33,94 @@ const FormCidades: React.FC = () => {
         onClose: () => { }
     });
 
+    //Verifica ID
+    const verificaId = () => {
+        const url = window.location.pathname;
+        const id = url.split('/').pop();
+
+
+        if (id !== 'form') {
+
+            setId(parseInt(id ? id : '0'));
+            //buscar os dados do estado
+            axios.get(`${server.url}${server.endpoints.cidade}/${id}`).then(response => {
+
+                console.log(response.data);
+
+                loadRegionais(response.data.id_Estado);
+
+                setFormData(response.data);
+
+            }).catch(error => {
+                console.error("Erro:", error);
+            });
+        } else {
+            setRegionais([{ value: 0, label: 'Selecione o estado' }]);
+        }
+    };
+
+    useEffect(() => {
+        verificaId();
+    }, []);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+
+                const response = await axios.get(
+                    `${server.url}${server.endpoints.estado}`,
+                    {
+                        //parâmetros
+                    }
+                );
+
+                //ajustar array para que o campo value seja o id do estado e o campo label seja o nome do estado, e adiciona uma opção padrão com value 0 e label "Selecione"
+                response.data = response.data.map((item: any) => {
+                    return { value: item.id, label: item.nome };
+                });
+
+                response.data.unshift({ value: 0, label: 'Selecione' });
+
+                setEstados(response.data);
+
+            } catch (error) {
+                console.error("Erro:", error);
+            }
+        };
+
+        fetchData();
+    }, []);
+
+    const loadRegionais = async (id: number) => {
+        try {
+
+            const response = await axios.get(
+                `${server.url}${server.endpoints.regiao}/Estado/${id}`,
+                {
+                    //parâmetros
+                }
+            );
+
+            if (response.data.length === 0) {
+                setRegionais([{ value: 0, label: 'Nenhuma regional encontrada' }]);
+                return;
+            }
+
+            //ajustar array para que o campo value seja o id do estado e o campo label seja o nome do estado, e adiciona uma opção padrão com value 0 e label "Selecione"
+            response.data = response.data.map((item: any) => {
+                return { value: item.id, label: item.nome };
+            });
+
+            response.data.unshift({ value: 0, label: 'Selecione' });
+
+            setRegionais(response.data);
+
+        } catch (error) {
+
+            console.error("Erro:", error);
+        }
+    }
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
 
@@ -32,14 +128,11 @@ const FormCidades: React.FC = () => {
             ...prevState,
             [name]: value
         }));
-    };
 
-    const estados = [
-        { value: "0", label: "Selecione um estado" },
-        { value: "1", label: "São Paulo" },
-        { value: "2", label: "Rio de Janeiro" },
-        { value: "3", label: "Minas Gerais" }
-    ];
+        if (name === 'id_Estado') {
+            loadRegionais(parseInt(value));
+        }
+    };
 
     function validaCampos(value = '', nome_campo = '', obrigatorio = false, tamanho = null) {
         let erro = false;
@@ -59,13 +152,30 @@ const FormCidades: React.FC = () => {
     }
 
     function handleSubmit(e: any) {
+
+        //Alerta de Carregando
+        setAlert({
+            show: true,
+            success: true,
+            title: 'Carregando',
+            message: ['Carregando solicitação...'],
+            onConfirm: () => {
+                //recarregar a página
+                //window.location.reload();
+            },
+            onClose: () => {
+                //recarregar a página
+                //window.location.reload();
+            }
+        });
+
         e.preventDefault();
         console.log(formData);
 
         var mensagem_erro = [];
 
         var nome = validaCampos(formData.nome, 'Nome', true);
-        var estado = validaCampos(formData.estado, 'Estado', true);
+        var estado = validaCampos(formData.id_Estado, 'Estado', true);
 
         if (nome.erro) {
             mensagem_erro.push(nome.mensagem_erro);
@@ -92,20 +202,82 @@ const FormCidades: React.FC = () => {
 
             return;
         } else {
-            setAlert({
-                show: true,
-                success: true,
-                title: 'Sucesso',
-                message: ['Cidade cadastrada com sucesso'],
-                onConfirm: () => {
-                    //recarregar a página
-                    window.location.reload();
-                },
-                onClose: () => {
-                    //recarregar a página
-                    window.location.reload();
-                }
-            });
+
+            var slug = formData.nome.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
+            formData.slug = slug;
+
+            console.log('FORMDATA', formData);
+
+            if (Id === 0) {
+                axios.post(`${server.url}${server.endpoints.cidade}`, formData).then(response => {
+
+                    setAlert({
+                        show: true,
+                        success: true,
+                        title: 'Sucesso',
+                        message: ['Cidade cadastrada com sucesso'],
+                        onConfirm: () => {
+                            //recarregar a página
+                            window.location.reload();
+                        },
+                        onClose: () => {
+                            //recarregar a página
+                            window.location.reload();
+                        }
+                    });
+                }).catch(error => {
+                    console.error("Erro:", error);
+
+                    setAlert({
+                        show: true,
+                        success: false,
+                        title: 'Erro',
+                        message: ['Erro ao cadastrar cidade'],
+                        onConfirm: () => {
+                            setAlert({ ...alert, show: false });
+                        },
+                        onClose: () => {
+                            setAlert({ ...alert, show: false });
+                        }
+                    });
+
+                });
+            } else {
+                axios.put(`${server.url}${server.endpoints.cidade}/${Id}`, formData).then(response => {
+                    console.log("Dados:", response.data);
+
+                    setAlert({
+                        show: true,
+                        success: true,
+                        title: 'Sucesso',
+                        message: ['Cidade atualizada com sucesso'],
+                        onConfirm: () => {
+                            //recarregar a página
+                            window.location.reload();
+                        },
+                        onClose: () => {
+                            //recarregar a página
+                            window.location.reload();
+                        }
+                    });
+                }).catch(error => {
+                    console.error("Erro:", error);
+
+                    setAlert({
+                        show: true,
+                        success: false,
+                        title: 'Erro',
+                        message: ['Erro ao atualizar cidade'],
+                        onConfirm: () => {
+                            setAlert({ ...alert, show: false });
+                        },
+                        onClose: () => {
+                            setAlert({ ...alert, show: false });
+                        }
+                    });
+
+                });
+            }
         }
     }
 
@@ -118,8 +290,9 @@ const FormCidades: React.FC = () => {
 
             <ContainerForm title="Informações Básicas">
                 <Row>
-                    <CampoTexto label="Nome" name="nome" tipo="text" className="col-md-10" onChange={handleChange} />
-                    <CampoSelect label="Estado" name="estado" options={estados} className="col-md-2" onChange={handleChange} />
+                    <CampoTexto label="Nome" name="nome" value={formData.nome} tipo="text" className="col-md-6" onChange={handleChange} />
+                    <CampoSelect label="Estado" name="id_Estado" value={formData.id_Estado} options={Estados} className="col-md-3" onChange={handleChange} />
+                    <CampoSelect disabled={parseInt(formData.id_Estado) > 0 ? false : true} value={formData.id_Regional} label="Regional" name="id_Regional" options={Regionais} className="col-md-3" onChange={handleChange} />
                 </Row>
 
                 <Row className="justify-content-end">

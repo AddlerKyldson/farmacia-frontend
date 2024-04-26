@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Layout from "../../structure/Layout";
 import Breadcrumb from "../../other/breadCrumb";
 import Titulo from "../../other/tituloPage";
@@ -8,12 +8,18 @@ import CampoSelect from "../../other/form/campoSelect";
 import BotaoSubmit from "../../other/form/botaoSubmit";
 import Row from "../../other/grid/row";
 import Alert from "../../other/modal/alert";
+import server from "../../../utils/data/server";
+import axios from "axios";
 
 const FormRegionais: React.FC = () => {
+    const [Id, setId] = useState(0);
     const [formData, setFormData] = useState({
         nome: '',
-        estado: '',
+        id_Estado: '',
+        slug: '',
     });
+
+    const [Estados, setEstados] = useState<any[]>([]);
 
     //configura exibição do Alert
     const [alert, setAlert] = useState({
@@ -25,6 +31,60 @@ const FormRegionais: React.FC = () => {
         onClose: () => { }
     });
 
+    //Verifica ID
+    const verificaId = () => {
+        const url = window.location.pathname;
+        const id = url.split('/').pop();
+
+
+        if (id !== 'form') {
+
+            setId(parseInt(id ? id : '0'));
+            //buscar os dados do estado
+            axios.get(`${server.url}${server.endpoints.regiao}/${id}`).then(response => {
+
+                setFormData(response.data);
+
+            }).catch(error => {
+                console.error("Erro:", error);
+            });
+        }
+    };
+
+    useEffect(() => {
+        verificaId();
+    }, []);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+
+                const response = await axios.get(
+                    `${server.url}${server.endpoints.estado}`,
+                    {
+                        //parâmetros
+                    }
+                );
+
+                console.log("Dados:", response.data);
+
+                //ajustar array para que o campo value seja o id do estado e o campo label seja o nome do estado, e adiciona uma opção padrão com value 0 e label "Selecione"
+                response.data = response.data.map((item: any) => {
+                    return { value: item.id, label: item.nome };
+                });
+
+                response.data.unshift({ value: 0, label: 'Selecione' });
+
+                setEstados(response.data);
+
+            } catch (error) {
+                console.error("Erro:", error);
+            }
+        };
+
+        fetchData();
+    }, []);
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
 
@@ -33,13 +93,6 @@ const FormRegionais: React.FC = () => {
             [name]: value
         }));
     };
-
-    const estados = [
-        { value: "0", label: "Selecione um estado" },
-        { value: "1", label: "São Paulo" },
-        { value: "2", label: "Rio de Janeiro" },
-        { value: "3", label: "Minas Gerais" }
-    ];
 
     function validaCampos(value = '', nome_campo = '', obrigatorio = false, tamanho = null) {
         let erro = false;
@@ -65,7 +118,7 @@ const FormRegionais: React.FC = () => {
         var mensagem_erro = [];
 
         var nome = validaCampos(formData.nome, 'Nome', true);
-        var estado = validaCampos(formData.estado, 'Estado', true);
+        var estado = validaCampos(formData.id_Estado, 'Estado', true);
 
         if (nome.erro) {
             mensagem_erro.push(nome.mensagem_erro);
@@ -92,20 +145,81 @@ const FormRegionais: React.FC = () => {
 
             return;
         } else {
-            setAlert({
-                show: true,
-                success: true,
-                title: 'Sucesso',
-                message: ['Regional cadastrada com sucesso'],
-                onConfirm: () => {
-                    //recarregar a página
-                    window.location.reload();
-                },
-                onClose: () => {
-                    //recarregar a página
-                    window.location.reload();
-                }
-            });
+            var slug = formData.nome.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
+            formData.slug = slug;
+
+            console.log('FORMDATA', formData);
+
+            if (Id === 0) {
+                axios.post(`${server.url}${server.endpoints.regiao}`, formData).then(response => {
+
+                    setAlert({
+                        show: true,
+                        success: true,
+                        title: 'Sucesso',
+                        message: ['Regional cadastrada com sucesso'],
+                        onConfirm: () => {
+                            //recarregar a página
+                            window.location.reload();
+                        },
+                        onClose: () => {
+                            //recarregar a página
+                            window.location.reload();
+                        }
+                    });
+                }).catch(error => {
+                    console.error("Erro:", error);
+
+                    setAlert({
+                        show: true,
+                        success: false,
+                        title: 'Erro',
+                        message: ['Erro ao cadastrar regional'],
+                        onConfirm: () => {
+                            setAlert({ ...alert, show: false });
+                        },
+                        onClose: () => {
+                            setAlert({ ...alert, show: false });
+                        }
+                    });
+
+                });
+            } else {
+                axios.put(`${server.url}${server.endpoints.regiao}/${Id}`, formData).then(response => {
+                    console.log("Dados:", response.data);
+
+                    setAlert({
+                        show: true,
+                        success: true,
+                        title: 'Sucesso',
+                        message: ['Regional atualizada com sucesso'],
+                        onConfirm: () => {
+                            //recarregar a página
+                            window.location.reload();
+                        },
+                        onClose: () => {
+                            //recarregar a página
+                            window.location.reload();
+                        }
+                    });
+                }).catch(error => {
+                    console.error("Erro:", error);
+
+                    setAlert({
+                        show: true,
+                        success: false,
+                        title: 'Erro',
+                        message: ['Erro ao atualizar regional'],
+                        onConfirm: () => {
+                            setAlert({ ...alert, show: false });
+                        },
+                        onClose: () => {
+                            setAlert({ ...alert, show: false });
+                        }
+                    });
+
+                });
+            }
         }
     }
 
@@ -118,8 +232,8 @@ const FormRegionais: React.FC = () => {
 
             <ContainerForm title="Informações Básicas">
                 <Row>
-                    <CampoTexto label="Nome" name="nome" tipo="text" className="col-md-10" onChange={handleChange} />
-                    <CampoSelect label="Estado" name="estado" options={estados} className="col-md-2" onChange={handleChange} />
+                    <CampoTexto label="Nome" name="nome" value={formData.nome} tipo="text" className="col-md-8" onChange={handleChange} />
+                    <CampoSelect label="Estado" name="id_Estado" value={formData.id_Estado} options={Estados} className="col-md-4" onChange={handleChange} />
                 </Row>
 
                 <Row className="justify-content-end">

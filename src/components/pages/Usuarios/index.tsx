@@ -51,8 +51,6 @@ const Usuarios: React.FC = () => {
         fetchData();
     }, []);
 
-
-
     const handleExcluir = async (id: number) => {
 
         setConfirm({

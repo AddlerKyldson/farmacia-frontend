@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Layout from "../../structure/Layout";
 import Breadcrumb from "../../other/breadCrumb";
 import Titulo from "../../other/tituloPage";
@@ -8,10 +8,15 @@ import CampoSelect from "../../other/form/campoSelect";
 import BotaoSubmit from "../../other/form/botaoSubmit";
 import Row from "../../other/grid/row";
 import Alert from "../../other/modal/alert";
+import axios from "axios";
+import server from "../../../utils/data/server";
 
 const FormEstados: React.FC = () => {
+    const [Id, setId] = useState(0);
     const [formData, setFormData] = useState({
         nome: '',
+        sigla: '',
+        slug: ''
     });
 
     //configura exibição do Alert
@@ -24,6 +29,30 @@ const FormEstados: React.FC = () => {
         onClose: () => { }
     });
 
+    //Verifica ID
+    const verificaId = () => {
+        const url = window.location.pathname;
+        const id = url.split('/').pop();
+
+
+        if (id !== 'form') {
+
+            setId(parseInt(id ? id : '0'));
+            //buscar os dados do estado
+            axios.get(`${server.url}${server.endpoints.estado}/${id}`).then(response => {
+
+                setFormData(response.data);
+
+            }).catch(error => {
+                console.error("Erro:", error);
+            });
+        }
+    };
+
+    useEffect(() => {
+        verificaId();
+    }, []);
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
 
@@ -33,7 +62,7 @@ const FormEstados: React.FC = () => {
         }));
     };
 
-    function validaCampos(value = '', nome_campo = '', obrigatorio = false, tamanho = null) {
+    function validaCampos(value = '', nome_campo = '', obrigatorio = false, tamanho = 0) {
         let erro = false;
         let mensagem_erro = '';
 
@@ -42,7 +71,7 @@ const FormEstados: React.FC = () => {
             mensagem_erro = `Campo ${nome_campo} obrigatório`;
         }
 
-        if (tamanho !== null && value !== null && value.length !== tamanho) {
+        if (tamanho !== 0 && tamanho !== null && value !== null && value.length !== tamanho) {
             erro = true;
             mensagem_erro = `O campo deve ter ${tamanho} caracteres`;
         }
@@ -51,15 +80,37 @@ const FormEstados: React.FC = () => {
     }
 
     function handleSubmit(e: any) {
+
+        //Alerta de Carregando
+        setAlert({
+            show: true,
+            success: true,
+            title: 'Carregando',
+            message: ['Carregando solicitação...'],
+            onConfirm: () => {
+                //recarregar a página
+                //window.location.reload();
+            },
+            onClose: () => {
+                //recarregar a página
+                //window.location.reload();
+            }
+        });
+
         e.preventDefault();
         console.log(formData);
 
         var mensagem_erro = [];
 
         var nome = validaCampos(formData.nome, 'Nome', true);
+        var sigla = validaCampos(formData.sigla, 'Sigla', true, 2);
 
         if (nome.erro) {
             mensagem_erro.push(nome.mensagem_erro);
+        }
+
+        if (sigla.erro) {
+            mensagem_erro.push(sigla.mensagem_erro);
         }
 
         if (mensagem_erro.length > 0) {
@@ -79,20 +130,82 @@ const FormEstados: React.FC = () => {
 
             return;
         } else {
-            setAlert({
-                show: true,
-                success: true,
-                title: 'Sucesso',
-                message: ['Estado cadastrada com sucesso'],
-                onConfirm: () => {
-                    //recarregar a página
-                    window.location.reload();
-                },
-                onClose: () => {
-                    //recarregar a página
-                    window.location.reload();
-                }
-            });
+
+            var slug = formData.nome.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
+            formData.slug = slug;
+
+            if (Id === 0) {
+                axios.post(`${server.url}${server.endpoints.estado}`, formData).then(response => {
+                    console.log("Dados:", response.data);
+
+                    setAlert({
+                        show: true,
+                        success: true,
+                        title: 'Sucesso',
+                        message: ['Estado cadastrado com sucesso'],
+                        onConfirm: () => {
+                            //recarregar a página
+                            window.location.reload();
+                        },
+                        onClose: () => {
+                            //recarregar a página
+                            window.location.reload();
+                        }
+                    });
+                }).catch(error => {
+                    console.error("Erro:", error);
+
+                    setAlert({
+                        show: true,
+                        success: false,
+                        title: 'Erro',
+                        message: ['Erro ao cadastrar estado'],
+                        onConfirm: () => {
+                            setAlert({ ...alert, show: false });
+                        },
+                        onClose: () => {
+                            setAlert({ ...alert, show: false });
+                        }
+                    });
+
+                });
+            } else {
+                axios.put(`${server.url}${server.endpoints.estado}/${Id}`, formData).then(response => {
+                    console.log("Dados:", response.data);
+
+                    setAlert({
+                        show: true,
+                        success: true,
+                        title: 'Sucesso',
+                        message: ['Estado atualizado com sucesso'],
+                        onConfirm: () => {
+                            //recarregar a página
+                            window.location.reload();
+                        },
+                        onClose: () => {
+                            //recarregar a página
+                            window.location.reload();
+                        }
+                    });
+                }).catch(error => {
+                    console.error("Erro:", error);
+
+                    setAlert({
+                        show: true,
+                        success: false,
+                        title: 'Erro',
+                        message: ['Erro ao atualizar estado'],
+                        onConfirm: () => {
+                            setAlert({ ...alert, show: false });
+                        },
+                        onClose: () => {
+                            setAlert({ ...alert, show: false });
+                        }
+                    });
+
+                });
+            }
+
         }
     }
 
@@ -105,7 +218,8 @@ const FormEstados: React.FC = () => {
 
             <ContainerForm title="Informações Básicas">
                 <Row>
-                    <CampoTexto label="Nome" name="nome" tipo="text" className="col-md-12" onChange={handleChange} />
+                    <CampoTexto label="Nome" name="nome" value={formData.nome} tipo="text" className="col-md-8" onChange={handleChange} />
+                    <CampoTexto label="Sigla" name="sigla" value={formData.sigla} tipo="text" className="col-md-4" onChange={handleChange} />
                 </Row>
 
                 <Row className="justify-content-end">
