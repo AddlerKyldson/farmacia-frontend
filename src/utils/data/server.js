@@ -6,7 +6,10 @@ const server = {
         regiao: '/Regional',
         cidade: '/Cidade',
         bairro: '/Bairro',
-        unidade_saude: '/Unidade_Saude'
+        unidade_saude: '/Unidade_Saude',
+        medicamento: '/Medicamento',
+        medicamento_movimentacao: '/Medicamento_Movimentacao',
+        medicamento_movimentacao_item: '/Medicamento_Movimentacao_Item'
     },
 };
 

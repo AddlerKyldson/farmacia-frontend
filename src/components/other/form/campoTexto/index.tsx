@@ -6,11 +6,13 @@ interface CampoTextoProps {
     tipo: string;
     className?: string;
     onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
     name: string;
     value?: any;
+    disabled?: boolean;
 }
 
-const CampoTexto: React.FC<CampoTextoProps> = ({ label, value, name, tipo, className, onChange }) => {
+const CampoTexto: React.FC<CampoTextoProps> = ({ label, value, name, tipo, className, disabled, onChange, onBlur }) => {
     return (
         <ContainerCampoTexto className={className}>
             <Label>{label}</Label>
@@ -22,8 +24,18 @@ const CampoTexto: React.FC<CampoTextoProps> = ({ label, value, name, tipo, class
                 }
 
             }
+
+                onBlur={
+                    (e) => {
+                        if (onBlur) {
+                            onBlur(e);
+                        }
+                    }
+                }
+
                 name={name}
                 value={value}
+                disabled={disabled}
             />
         </ContainerCampoTexto>
     );

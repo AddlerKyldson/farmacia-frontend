@@ -15,12 +15,12 @@ const FormUnidadeSaude: React.FC = () => {
     const [Id, setId] = useState(0);
     const [formData, setFormData] = useState({
         nome: '',
-        Cnes: '',
+        cnes: '',
         logradouro: '',
         id_Estado: '',
         id_Cidade: '',
         id_Bairro: '',
-        Cep: '',
+        cep: '',
         numero: '',
         complemento: '',
         tipo: '',
@@ -167,6 +167,8 @@ const FormUnidadeSaude: React.FC = () => {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
 
+        console.log(name, value)
+
         setFormData(prevState => ({
             ...prevState,
             [name]: value
@@ -222,12 +224,12 @@ const FormUnidadeSaude: React.FC = () => {
         var mensagem_erro = [];
 
         var nome = validaCampos(formData.nome, 'Nome', true);
-        var cnes = validaCampos(formData.Cnes, 'CNES', true, 7);
+        var cnes = validaCampos(formData.cnes, 'CNES', true, 7);
         var logradouro = validaCampos(formData.logradouro, 'Logradouro', true);
         var estado = validaCampos(formData.id_Estado, 'Estado', true);
         var cidade = validaCampos(formData.id_Cidade, 'Cidade', true);
         var bairro = validaCampos(formData.id_Bairro, 'Bairro', true);
-        var cep = validaCampos(formData.Cep, 'CEP', true, 8);
+        var cep = validaCampos(formData.cep, 'CEP', true, 8);
         var numero = validaCampos(formData.numero, 'Número', true);
         var complemento = validaCampos(formData.complemento, 'Complemento', true);
         var tipo = validaCampos(formData.tipo, 'Tipo', true);
@@ -377,6 +379,10 @@ const FormUnidadeSaude: React.FC = () => {
         { value: '3', label: 'Unidade Básica de Saúde' },
         { value: '4', label: 'Unidade de Pronto Atendimento' },
         { value: '5', label: 'Farmácia' },
+        { value: '6', label: 'Clínica' },
+        { value: '7', label: 'Laboratório' },
+        { value: '8', label: 'Secretaria' }
+
     ];
 
     return (
@@ -389,7 +395,7 @@ const FormUnidadeSaude: React.FC = () => {
             <ContainerForm title="Informações Básicas">
                 <Row>
                     <CampoTexto label="Nome" value={formData.nome} name="nome" tipo="text" className="col-md-8" onChange={handleChange} />
-                    <CampoTexto label="CNES" value={formData.Cnes} name="Cnes" tipo="text" className="col-md-4" onChange={handleChange} />
+                    <CampoTexto label="CNES" value={formData.cnes} name="cnes" tipo="text" className="col-md-4" onChange={handleChange} />
                 </Row>
                 <Row>
                     <CampoSelect label="Tipo" name="tipo" value={formData.tipo} options={Tipos} className="col-md-4" onChange={handleChange} />
@@ -404,7 +410,7 @@ const FormUnidadeSaude: React.FC = () => {
                 </Row>
                 <Row>
                     <CampoSelect label="Bairro" value={formData.id_Bairro} name="id_Bairro" options={Bairros} className="col-md-4" onChange={handleChange} />
-                    <CampoTexto label="CEP" value={formData.Cep} name="Cep" tipo="text" className="col-md-2" onChange={handleChange} />
+                    <CampoTexto label="CEP" value={formData.cep} name="cep" tipo="text" className="col-md-2" onChange={handleChange} />
                     <CampoTexto label="Número" value={formData.numero} name="numero" tipo="text" className="col-md-2" onChange={handleChange} />
                     <CampoTexto label="Complemento" value={formData.complemento} name="complemento" tipo="text" className="col-md-4" onChange={handleChange} />
                 </Row>

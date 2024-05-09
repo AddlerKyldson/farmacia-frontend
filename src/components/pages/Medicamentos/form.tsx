@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Layout from "../../structure/Layout";
 import Breadcrumb from "../../other/breadCrumb";
 import Titulo from "../../other/tituloPage";
@@ -7,12 +7,17 @@ import CampoTexto from "../../other/form/campoTexto";
 import BotaoSubmit from "../../other/form/botaoSubmit";
 import Row from "../../other/grid/row";
 import Alert from "../../other/modal/alert";
+import axios from "axios";
+import server from "../../../utils/data/server";
 
 const FormMedicamentos: React.FC = () => {
+    const [Id, setId] = useState(0);
     const [formData, setFormData] = useState({
-        codigo_barras: '',
+        codigo_Barras: '',
         nome: '',
-        apelido: ''
+        apelido: '',
+        estoque: 0,
+        slug: ''
     });
 
     //configura exibição do Alert
@@ -24,6 +29,31 @@ const FormMedicamentos: React.FC = () => {
         onConfirm: () => { },
         onClose: () => { }
     });
+
+    //Verifica ID
+    const verificaId = () => {
+        const url = window.location.pathname;
+        const id = url.split('/').pop();
+
+
+        if (id !== 'form') {
+
+            setId(parseInt(id ? id : '0'));
+            //buscar os dados do estado
+            axios.get(`${server.url}${server.endpoints.medicamento}/${id}`).then(response => {
+
+                setFormData(response.data);
+
+            }).catch(error => {
+                console.error("Erro:", error);
+            });
+        } else {
+        }
+    };
+
+    useEffect(() => {
+        verificaId();
+    }, []);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -52,14 +82,32 @@ const FormMedicamentos: React.FC = () => {
     }
 
     function handleSubmit(e: any) {
+
+        //Alerta de Carregando
+        setAlert({
+            show: true,
+            success: true,
+            title: 'Carregando',
+            message: ['Carregando solicitação...'],
+            onConfirm: () => {
+                //recarregar a página
+                //window.location.reload();
+            },
+            onClose: () => {
+                //recarregar a página
+                //window.location.reload();
+            }
+        });
+
         e.preventDefault();
         console.log(formData);
 
         var mensagem_erro = [];
 
-        var codigo_barras = validaCampos(formData.codigo_barras, 'Código de Barras', true);
+        var codigo_barras = validaCampos(formData.codigo_Barras, 'Código de Barras', true);
         var nome = validaCampos(formData.nome, 'Nome', true);
         var apelido = validaCampos(formData.apelido, 'Apelido', true);
+        var estoque = validaCampos(formData.estoque.toString(), 'Estoque', true);
 
         if (codigo_barras.erro) {
             mensagem_erro.push(codigo_barras.mensagem_erro);
@@ -71,6 +119,10 @@ const FormMedicamentos: React.FC = () => {
 
         if (apelido.erro) {
             mensagem_erro.push(apelido.mensagem_erro);
+        }
+
+        if (estoque.erro) {
+            mensagem_erro.push(estoque.mensagem_erro);
         }
 
         if (mensagem_erro.length > 0) {
@@ -90,20 +142,81 @@ const FormMedicamentos: React.FC = () => {
 
             return;
         } else {
-            setAlert({
-                show: true,
-                success: true,
-                title: 'Sucesso',
-                message: ['Medicamento cadastrada com sucesso'],
-                onConfirm: () => {
-                    //recarregar a página
-                    window.location.reload();
-                },
-                onClose: () => {
-                    //recarregar a página
-                    window.location.reload();
-                }
-            });
+
+            var slug = formData.nome.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
+            formData.slug = slug;
+
+            if (Id === 0) {
+                axios.post(`${server.url}${server.endpoints.medicamento}`, formData).then(response => {
+
+                    setAlert({
+                        show: true,
+                        success: true,
+                        title: 'Sucesso',
+                        message: ['Medicamento cadastrado com sucesso'],
+                        onConfirm: () => {
+                            //recarregar a página
+                            window.location.reload();
+                        },
+                        onClose: () => {
+                            //recarregar a página
+                            window.location.reload();
+                        }
+                    });
+                }).catch(error => {
+                    console.error("Erro:", error);
+
+                    setAlert({
+                        show: true,
+                        success: false,
+                        title: 'Erro',
+                        message: ['Erro ao cadastrar medicamento'],
+                        onConfirm: () => {
+                            setAlert({ ...alert, show: false });
+                        },
+                        onClose: () => {
+                            setAlert({ ...alert, show: false });
+                        }
+                    });
+
+                });
+            } else {
+                axios.put(`${server.url}${server.endpoints.medicamento}/${Id}`, formData).then(response => {
+                    console.log("Dados:", response.data);
+
+                    setAlert({
+                        show: true,
+                        success: true,
+                        title: 'Sucesso',
+                        message: ['Medicamento atualizado com sucesso'],
+                        onConfirm: () => {
+                            //recarregar a página
+                            window.location.reload();
+                        },
+                        onClose: () => {
+                            //recarregar a página
+                            window.location.reload();
+                        }
+                    });
+                }).catch(error => {
+                    console.error("Erro:", error);
+
+                    setAlert({
+                        show: true,
+                        success: false,
+                        title: 'Erro',
+                        message: ['Erro ao atualizar medicamento'],
+                        onConfirm: () => {
+                            setAlert({ ...alert, show: false });
+                        },
+                        onClose: () => {
+                            setAlert({ ...alert, show: false });
+                        }
+                    });
+
+                });
+            }
+
         }
     }
 
@@ -116,9 +229,12 @@ const FormMedicamentos: React.FC = () => {
 
             <ContainerForm title="Informações Básicas">
                 <Row>
-                    <CampoTexto label="Código de Barras" name="codigo_barras" tipo="text" className="col-md-4" onChange={handleChange} />
-                    <CampoTexto label="Nome" name="nome" tipo="text" className="col-md-4" onChange={handleChange} />
-                    <CampoTexto label="Apelido" name="apelido" tipo="text" className="col-md-4" onChange={handleChange} />
+                    <CampoTexto label="Código de Barras" value={formData.codigo_Barras} name="codigo_Barras" tipo="text" className="col-md-4" onChange={handleChange} />
+                    <CampoTexto label="Nome" value={formData.nome} name="nome" tipo="text" className="col-md-4" onChange={handleChange} />
+                    <CampoTexto label="Apelido" value={formData.apelido} name="apelido" tipo="text" className="col-md-4" onChange={handleChange} />
+                </Row>
+                <Row>
+                    <CampoTexto label="Estoque" value={formData.estoque} name="estoque" tipo="text" className="col-md-3" onChange={handleChange} />
                 </Row>
 
                 <Row className="justify-content-end">

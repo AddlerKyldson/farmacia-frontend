@@ -3,13 +3,15 @@ import { Container, ContainerFormTitle, Form } from "./styles";
 
 interface ContainerFormProps {
     children: ReactNode;
-    title: string;
+    title?: string;
 }
 
 const ContainerForm: React.FC<ContainerFormProps> = ({ children, title }) => {
     return (
         <Container>
-            <ContainerFormTitle>{title}</ContainerFormTitle>
+            {
+                title && <ContainerFormTitle>{title}</ContainerFormTitle>
+            }
             <Form>
                 {children}
             </Form>
