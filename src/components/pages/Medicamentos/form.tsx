@@ -139,7 +139,7 @@ const FormMedicamentos: React.FC = () => {
         var codigo_barras = validaCampos(formData.codigo_Barras, 'Código de Barras', true);
         var nome = validaCampos(formData.nome, 'Nome', true);
         var apelido = validaCampos(formData.apelido, 'Apelido', true);
-        var estoque = validaCampos(formData.estoque.toString(), 'Estoque', true);
+        //var estoque = validaCampos(formData.estoque.toString(), 'Estoque', true);
 
         if (codigo_barras.erro) {
             mensagem_erro.push(codigo_barras.mensagem_erro);
@@ -151,10 +151,6 @@ const FormMedicamentos: React.FC = () => {
 
         if (apelido.erro) {
             mensagem_erro.push(apelido.mensagem_erro);
-        }
-
-        if (estoque.erro) {
-            mensagem_erro.push(estoque.mensagem_erro);
         }
 
         if (mensagem_erro.length > 0) {
