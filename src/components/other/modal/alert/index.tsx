@@ -37,7 +37,7 @@ const Alert: React.FC<IProps> = ({ title, message, success, show, onConfirm, onC
                             </AlertContent>
                         </AlertBody>
                         <AlertFooter>
-                            <Button onClick={onConfirm}>Confirmar</Button>
+                            <Button className='btn btn-primary' onClick={onConfirm}>Confirmar</Button>
                         </AlertFooter>
                     </AlertContainer>
                 </Overlay>

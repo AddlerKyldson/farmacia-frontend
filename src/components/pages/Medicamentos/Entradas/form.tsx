@@ -17,18 +17,28 @@ interface Medicamentos {
     quantidade: string;
     data_validade?: string;
     disabled?: boolean;
+    showDropdown?: boolean;
 }
 
 const FormEntradasMedicamentos: React.FC = () => {
     const [Id, setId] = useState(0);
     const [medicamentos, setMedicamentos] = useState<Medicamentos[]>([]);
+    const [dropdownOptions, setDropdownOptions] = useState<DropdownOption[]>([]);
 
     const [formData, setFormData] = useState({
         descricao: '',
         data: '',
         tipo: 1,
+        id_usuario_cadastro: 0,
         medicamento_movimentacao_item: medicamentos
     });
+
+    interface DropdownOption {
+        id: number;
+        nome: string;
+        apelido: string;
+        codigo_Barras: number;
+    }
 
     //configura exibição do Alert
     const [alert, setAlert] = useState({
@@ -69,6 +79,48 @@ const FormEntradasMedicamentos: React.FC = () => {
         verificaId();
     }, []);
 
+    const fetchDropdownOptions = async (name: string, query: string, index: any) => {
+        try {
+            const response = await axios.get(`${server.url}${server.endpoints.medicamento}/Form/${name}/${query}`);
+            console.log("Dropdown options:", response.data.$values);
+
+            if (response.data.$values.length > 0) {
+                //quero exibir apenas o dropdown que estiver dentro do campo que está sendo preenchido
+                setDropdownOptions(response.data.$values);
+                setMedicamentos(prevMedicamentos => prevMedicamentos.map((med, i) => {
+                    if (i !== index) {
+                        return med;
+                    }
+                    return {
+                        ...med,
+                        showDropdown: true
+                    };
+                }));
+            }
+
+        } catch (error) {
+            console.error("Error fetching dropdown options", error);
+        }
+    };
+
+    const handleOptionSelect = (option: DropdownOption, index: any) => {
+        //preencher campo de código de barras
+        setMedicamentos(prevMedicamentos => prevMedicamentos.map((med, i) => {
+            if (i !== index) {
+                return med;
+            }
+            return {
+                ...med,
+                codigo_barras: option.codigo_Barras,
+                nome: option.nome,
+                disabled: true
+            };
+        }));
+
+        ocultarDropdown(index);
+
+    };
+
     const verificaMedicamentos = async (id: number) => {
         try {
             const response = await axios.get(`${server.url}${server.endpoints.medicamento_movimentacao_item}/Movimentacao/${id}`);
@@ -81,10 +133,10 @@ const FormEntradasMedicamentos: React.FC = () => {
                 quantidade: item.quantidade,
                 disabled: true
             }));
-            
+
             // Atualizando o estado de medicamentos
             setMedicamentos(novosMedicamentos);
-                        
+
             // Atualizando o estado de formData
             setFormData(prevState => ({
                 ...prevState,
@@ -145,16 +197,15 @@ const FormEntradasMedicamentos: React.FC = () => {
     const handleChangeMedicamento = (e: any, index: any) => {
         const { name, value } = e.target;
 
+        const newValue = name === 'quantidade' ? parseInt(value) : value;
+
         setMedicamentos(prevMedicamentos => prevMedicamentos.map((item, i) => {
             if (i !== index) {
-                // Este não é o item que queremos - mantenha-o como estava
                 return item;
             }
-
-            // Este é o que queremos - retorne um objeto atualizado
             return {
                 ...item,
-                [name]: value
+                [name]: newValue
             };
         }));
 
@@ -162,137 +213,115 @@ const FormEntradasMedicamentos: React.FC = () => {
             ...prevState,
             medicamento_movimentacao_item: medicamentos
         }));
+
+        if (name === 'codigo_barras' && value.length >= 3) {
+            fetchDropdownOptions(name, value, index);
+        } else {
+            ocultarDropdown(index);
+        }
     };
 
-    function handleSubmit(e: any) {
+    const ocultarDropdown = (index: any) => {
+        console.log("Ocultando dropdown...", index);
+        setMedicamentos(prevMedicamentos => prevMedicamentos.map((med, i) => {
+            if (i !== index) {
+                return med;
+            }
+            return {
+                ...med,
+                showDropdown: false
+            };
+        }
+        ));
+    }
 
-        console.log("FORMDATA", formData)
-        console.log("MEDICAMENTOS", medicamentos)
+    const handleSubmit = (e: any) => {
+        e.preventDefault();
 
-        //Alerta de Carregando
+        const updatedFormData = {
+            ...formData,
+            medicamento_movimentacao_item: medicamentos.map(med => ({
+                ...med,
+                quantidade: parseInt(med.quantidade as unknown as string)
+            }))
+        };
+
         setAlert({
             show: true,
             success: true,
             title: 'Carregando',
             message: ['Carregando solicitação...'],
-            onConfirm: () => {
-                //recarregar a página
-                //window.location.reload();
-            },
-            onClose: () => {
-                //recarregar a página
-                //window.location.reload();
-            }
+            onConfirm: () => { },
+            onClose: () => { }
         });
 
+        const validateFields = () => {
+            let errors: string[] = [];
+            if (!formData.descricao) errors.push("Campo Descrição obrigatório");
+            if (!formData.data) errors.push("Campo Data obrigatório");
+            return errors;
+        };
 
-        e.preventDefault();
-        console.log(formData);
+        const errors = validateFields();
 
-        var mensagem_erro = [];
-
-        var descricao = validaCampos(formData.descricao, 'Descrição', true);
-        var data = validaCampos(formData.data, 'Data', true);
-
-        if (descricao.erro) {
-            mensagem_erro.push(descricao.mensagem_erro);
-        }
-
-        if (data.erro) {
-            mensagem_erro.push(data.mensagem_erro);
-        }
-
-        if (mensagem_erro.length > 0) {
-
+        if (errors.length > 0) {
             setAlert({
                 show: true,
                 success: false,
                 title: 'Erro',
-                message: mensagem_erro,
-                onConfirm: () => {
-                    setAlert({ ...alert, show: false });
-                },
-                onClose: () => {
-                    setAlert({ ...alert, show: false });
-                }
+                message: errors,
+                onConfirm: () => setAlert({ ...alert, show: false }),
+                onClose: () => setAlert({ ...alert, show: false })
             });
-
             return;
-        } else {
+        }
 
-            if (Id === 0) {
-                axios.post(`${server.url}${server.endpoints.medicamento_movimentacao}`, formData).then(response => {
-
+        if (Id === 0) {
+            axios.post(`${server.url}${server.endpoints.medicamento_movimentacao}`, updatedFormData)
+                .then(response => {
                     setAlert({
                         show: true,
                         success: true,
                         title: 'Sucesso',
                         message: ['Entrada cadastrada com sucesso'],
-                        onConfirm: () => {
-                            //recarregar a página
-                            window.location.reload();
-                        },
-                        onClose: () => {
-                            //recarregar a página
-                            window.location.reload();
-                        }
+                        onConfirm: () => window.location.reload(),
+                        onClose: () => window.location.reload()
                     });
-                }).catch(error => {
-                    console.error("Erro:", error);
-
+                })
+                .catch(error => {
                     setAlert({
                         show: true,
                         success: false,
                         title: 'Erro',
                         message: ['Erro ao cadastrar entrada'],
-                        onConfirm: () => {
-                            setAlert({ ...alert, show: false });
-                        },
-                        onClose: () => {
-                            setAlert({ ...alert, show: false });
-                        }
+                        onConfirm: () => setAlert({ ...alert, show: false }),
+                        onClose: () => setAlert({ ...alert, show: false })
                     });
-
                 });
-            } else {
-                axios.put(`${server.url}${server.endpoints.medicamento_movimentacao}/${Id}`, formData).then(response => {
-                    console.log("Dados:", response.data);
-
+        } else {
+            axios.put(`${server.url}${server.endpoints.medicamento_movimentacao}/${Id}`, updatedFormData)
+                .then(response => {
                     setAlert({
                         show: true,
                         success: true,
                         title: 'Sucesso',
                         message: ['Entrada atualizada com sucesso'],
-                        onConfirm: () => {
-                            //recarregar a página
-                            window.location.reload();
-                        },
-                        onClose: () => {
-                            //recarregar a página
-                            window.location.reload();
-                        }
+                        onConfirm: () => window.location.reload(),
+                        onClose: () => window.location.reload()
                     });
-                }).catch(error => {
-                    console.error("Erro:", error);
-
+                })
+                .catch(error => {
                     setAlert({
                         show: true,
                         success: false,
                         title: 'Erro',
                         message: ['Erro ao atualizar entrada'],
-                        onConfirm: () => {
-                            setAlert({ ...alert, show: false });
-                        },
-                        onClose: () => {
-                            setAlert({ ...alert, show: false });
-                        }
+                        onConfirm: () => setAlert({ ...alert, show: false }),
+                        onClose: () => setAlert({ ...alert, show: false })
                     });
-
                 });
-            }
-
         }
-    }
+    };
 
     const verificaCodigoBarras = (codigo_barras: number, index: number) => {
         axios.get(`${server.url}${server.endpoints.medicamento}/CodigoBarras/${codigo_barras}`)
@@ -337,7 +366,17 @@ const FormEntradasMedicamentos: React.FC = () => {
             <ContainerForm title="Medicamentos">
                 {medicamentos.map((medicamento, index) => (
                     <Row key={index}>
-                        <CampoTexto label="Código de Barras" value={medicamento.codigo_barras} name="codigo_barras" tipo="number" className="col-md-3" onChange={(e) => handleChangeMedicamento(e, index)} onBlur={(e) => verificaCodigoBarras(parseInt(e.target.value), index)} />
+                        <CampoTexto label="Código de Barras" value={medicamento.codigo_barras} name="codigo_barras" tipo="number" className="col-md-3" onChange={(e) => handleChangeMedicamento(e, index)} onBlur={(e) => verificaCodigoBarras(parseInt(e.target.value), index)} >
+                            {medicamento.showDropdown && (
+                                <div className="dropdown-menu dropdown-options-preview" style={{ display: 'block' }}>
+                                    {dropdownOptions.map((option, idx) => (
+                                        <a key={idx} className="dropdown-item" href="#" onClick={() => handleOptionSelect(option, index)}>
+                                            {`${option.codigo_Barras} - ${option.apelido} (${option.nome})`}
+                                        </a>
+                                    ))}
+                                </div>
+                            )}
+                        </CampoTexto>
                         <CampoTexto label="Nome" name="nome" value={medicamento.nome} tipo="text" className="col-md-6" onChange={(e) => handleChangeMedicamento(e, index)} disabled={medicamento.disabled ? true : false} />
                         <CampoTexto label="Quantidade" value={medicamento.quantidade} name="quantidade" tipo="number" className="col-md-2" onChange={(e) => handleChangeMedicamento(e, index)} />
                         <BotaoExcluir texto="x" className="col-md-1" onClick={() => {

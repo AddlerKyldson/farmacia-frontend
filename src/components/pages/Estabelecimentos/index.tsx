@@ -4,6 +4,7 @@ import Filtro from "../../other/filtro";
 import Resultado from "../../other/resultado";
 import Breadcrumb from "../../other/breadCrumb";
 import Titulo from "../../other/tituloPage";
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 const Estabelecimentos: React.FC = () => {
 
@@ -58,7 +59,7 @@ const Estabelecimentos: React.FC = () => {
             </Filtro>
 
             <Resultado title="Resultado">
-                <table className="table">
+                <table className="table table-striped">
                     <thead>
                         <tr>
                             <th>{"ID"}</th>
@@ -86,8 +87,8 @@ const Estabelecimentos: React.FC = () => {
                                 <td>{dado.renda}</td>
                                 <td>{dado.escolaridade}</td>
                                 <td>
-                                    <button className="btn btn-warning">{"Editar"}</button>
-                                    <button className="btn btn-danger">{"Excluir"}</button>
+                                    <button className="btn btn-sm btn-warning me-1">{"Editar"}</button>
+                                    <button className="btn btn-sm btn-danger">{"Excluir"}</button>
                                 </td>
                             </tr>
                         ))}

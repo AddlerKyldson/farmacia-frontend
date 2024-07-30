@@ -36,53 +36,59 @@ import "./assets/styles.css";
 import TipoEstabelecimento from "./components/pages/TipoEstabelecimento";
 import FormTipoEstabelecimento from "./components/pages/TipoEstabelecimento/form";
 import LoginPage from "./components/pages/Login";
+import PrivateRoute from "./routes/PrivateRoute";
+import { AuthProvider } from './context/AuthContext';
+import Dashboard from "./components/pages/Dashboard";
 
 const App: React.FC = () => {
     return (
-        <BrowserRouter>
-            <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/estabelecimentos" element={<Estabelecimentos />} />
-                <Route path="/estabelecimentos/form" element={<FormularioEstabelecimentos />} />
-                <Route path="/bairros" element={<Bairros />} />
-                <Route path="/bairros/form" element={<FormBairros />} />
-                <Route path="/bairros/form/:id" element={<FormBairros />} />
-                <Route path="/cidades" element={<Cidades />} />
-                <Route path="/cidades/form" element={<FormCidades />} />
-                <Route path="/cidades/form/:id" element={<FormCidades />} />
-                <Route path="/estados" element={<Estados />} />
-                <Route path="/estados/form" element={<FormEstados />} />
-                <Route path="/estados/form/:id" element={<FormEstados />} />
-                <Route path="/cidadaos" element={<Cidadaos />} />
-                <Route path="/cidadaos/form" element={<FormCidadaos />} />
-                <Route path="/inspecoes" element={<Inspecoes />} />
-                <Route path="/inspecoes/form" element={<FormInspecoes />} />
-                <Route path="/regionais" element={<Regionais />} />
-                <Route path="/regionais/form" element={<FormRegionais />} />
-                <Route path="/regionais/form/:id" element={<FormRegionais />} />
-                <Route path="/responsaveis" element={<Responsaveis />} />
-                <Route path="/responsaveis/form" element={<FormResponsaveis />} />
-                <Route path="/series" element={<Series />} />
-                <Route path="/series/form" element={<FormSeries />} />
-                <Route path="/tipos-estabelecimentos" element={<TipoEstabelecimento />} />
-                <Route path="/tipos-estabelecimentos/form" element={<FormTipoEstabelecimento />} />
-                <Route path="/usuarios" element={<Usuarios />} />
-                <Route path="/usuarios/form" element={<FormUsuarios />} />
-                <Route path="/usuarios/form/:id" element={<FormUsuarios />} />
-                <Route path="/medicamentos" element={<Medicamentos />} />
-                <Route path="/medicamentos/form" element={<FormMedicamentos />} />
-                <Route path="/medicamentos/form/:id" element={<FormMedicamentos />} />
-                <Route path="/medicamentos/entradas" element={<EntradasMedicamentos />} />
-                <Route path="/medicamentos/entradas/form" element={<FormEntradasMedicamentos />} />
-                <Route path="/medicamentos/entradas/form/:id" element={<FormEntradasMedicamentos />} />
-                <Route path="/medicamentos/saidas" element={<SaidasMedicamentos />} />
-                <Route path="/medicamentos/saidas/form" element={<FormSaidasMedicamentos />} />
-                <Route path="/unidades-de-saude" element={<UnidadeSaude />} />
-                <Route path="/unidades-de-saude/form" element={<FormUnidadeSaude />} />
-                <Route path="/unidades-de-saude/form/:id" element={<FormUnidadeSaude />} />
-            </Routes>
-        </BrowserRouter>
+        <AuthProvider>
+            <BrowserRouter>
+                <Routes>
+                    <Route path="/" element={<PrivateRoute><Home /></PrivateRoute>} />
+                    <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/estabelecimentos" element={<PrivateRoute><Estabelecimentos /></PrivateRoute>} />
+                    <Route path="/estabelecimentos/form" element={<PrivateRoute><FormularioEstabelecimentos /></PrivateRoute>} />
+                    <Route path="/bairros" element={<PrivateRoute><Bairros /></PrivateRoute>} />
+                    <Route path="/bairros/form" element={<PrivateRoute><FormBairros /></PrivateRoute>} />
+                    <Route path="/bairros/form/:id" element={<PrivateRoute><FormBairros /></PrivateRoute>} />
+                    <Route path="/cidades" element={<PrivateRoute><Cidades /></PrivateRoute>} />
+                    <Route path="/cidades/form" element={<PrivateRoute><FormCidades /></PrivateRoute>} />
+                    <Route path="/cidades/form/:id" element={<PrivateRoute><FormCidades /></PrivateRoute>} />
+                    <Route path="/estados" element={<PrivateRoute><Estados /></PrivateRoute>} />
+                    <Route path="/estados/form" element={<PrivateRoute><FormEstados /></PrivateRoute>} />
+                    <Route path="/estados/form/:id" element={<PrivateRoute><FormEstados /></PrivateRoute>} />
+                    <Route path="/cidadaos" element={<PrivateRoute><Cidadaos /></PrivateRoute>} />
+                    <Route path="/cidadaos/form" element={<PrivateRoute><FormCidadaos /></PrivateRoute>} />
+                    <Route path="/inspecoes" element={<PrivateRoute><Inspecoes /></PrivateRoute>} />
+                    <Route path="/inspecoes/form" element={<PrivateRoute><FormInspecoes /></PrivateRoute>} />
+                    <Route path="/regionais" element={<PrivateRoute><Regionais /></PrivateRoute>} />
+                    <Route path="/regionais/form" element={<PrivateRoute><FormRegionais /></PrivateRoute>} />
+                    <Route path="/regionais/form/:id" element={<PrivateRoute><FormRegionais /></PrivateRoute>} />
+                    <Route path="/responsaveis" element={<PrivateRoute><Responsaveis /></PrivateRoute>} />
+                    <Route path="/responsaveis/form" element={<PrivateRoute><FormResponsaveis /></PrivateRoute>} />
+                    <Route path="/series" element={<PrivateRoute><Series /></PrivateRoute>} />
+                    <Route path="/series/form" element={<PrivateRoute><FormSeries /></PrivateRoute>} />
+                    <Route path="/tipos-estabelecimentos" element={<PrivateRoute><TipoEstabelecimento /></PrivateRoute>} />
+                    <Route path="/tipos-estabelecimentos/form" element={<PrivateRoute><FormTipoEstabelecimento /></PrivateRoute>} />
+                    <Route path="/usuarios" element={<PrivateRoute><Usuarios /></PrivateRoute>} />
+                    <Route path="/usuarios/form" element={<PrivateRoute><FormUsuarios /></PrivateRoute>} />
+                    <Route path="/usuarios/form/:id" element={<PrivateRoute><FormUsuarios /></PrivateRoute>} />
+                    <Route path="/medicamentos" element={<PrivateRoute><Medicamentos /></PrivateRoute>} />
+                    <Route path="/medicamentos/form" element={<PrivateRoute><FormMedicamentos /></PrivateRoute>} />
+                    <Route path="/medicamentos/form/:id" element={<PrivateRoute><FormMedicamentos /></PrivateRoute>} />
+                    <Route path="/medicamentos/entradas" element={<PrivateRoute><EntradasMedicamentos /></PrivateRoute>} />
+                    <Route path="/medicamentos/entradas/form" element={<PrivateRoute><FormEntradasMedicamentos /></PrivateRoute>} />
+                    <Route path="/medicamentos/entradas/form/:id" element={<PrivateRoute><FormEntradasMedicamentos /></PrivateRoute>} />
+                    <Route path="/medicamentos/saidas" element={<PrivateRoute><SaidasMedicamentos /></PrivateRoute>} />
+                    <Route path="/medicamentos/saidas/form" element={<PrivateRoute><FormSaidasMedicamentos /></PrivateRoute>} />
+                    <Route path="/unidades-de-saude" element={<PrivateRoute><UnidadeSaude /></PrivateRoute>} />
+                    <Route path="/unidades-de-saude/form" element={<PrivateRoute><FormUnidadeSaude /></PrivateRoute>} />
+                    <Route path="/unidades-de-saude/form/:id" element={<PrivateRoute><FormUnidadeSaude /></PrivateRoute>} />
+                </Routes>
+            </BrowserRouter>
+        </AuthProvider>
     );
 };
 

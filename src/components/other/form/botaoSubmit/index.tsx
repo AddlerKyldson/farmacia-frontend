@@ -5,12 +5,13 @@ interface BotaoSubmitProps {
     texto: string;
     className?: string;
     onClick?: (e: React.MouseEvent) => void;
+    disabled?: boolean;
 }
 
-const BotaoSubmit: React.FC<BotaoSubmitProps> = ({ texto, className, onClick }) => {
+const BotaoSubmit: React.FC<BotaoSubmitProps> = ({ texto, className, onClick, disabled }) => {
     return (
         <ContainerBotaoSubmit className={className}>
-            <Input type="submit" value={texto} onClick={(e) => onClick ? onClick(e) : undefined} />
+            <Input className='btn btn-success' type="submit" value={texto} onClick={(e) => onClick ? onClick(e) : undefined} disabled={disabled} />
         </ContainerBotaoSubmit>
     );
 };

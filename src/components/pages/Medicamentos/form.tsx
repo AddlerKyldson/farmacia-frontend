@@ -30,6 +30,15 @@ const FormMedicamentos: React.FC = () => {
         onClose: () => { }
     });
 
+    //Configuração campo Código de Barras
+    const [campoComErro, setCampoComErro] = useState(false);
+    const [mensagemErro, setMensagemErro] = useState("");
+    
+    const setFieldState = (errored: boolean, mensagemErro: string) => {
+        setCampoComErro(errored);
+        setMensagemErro(mensagemErro);
+    };
+
     //Verifica ID
     const verificaId = () => {
         const url = window.location.pathname;
@@ -80,6 +89,29 @@ const FormMedicamentos: React.FC = () => {
 
         return { erro, mensagem_erro };
     }
+
+    const verificaCodigoBarras = (codigo_barras: number, setFieldState: (errored: boolean, mensagemErro: string) => void) => {
+        axios.get(`${server.url}${server.endpoints.medicamento}/CodigoBarras/${codigo_barras}`)
+            .then(response => {
+                if (response.data) {
+                    console.log("Resposta:", response.data);
+                    // Se o medicamento já existir, deixar campo com borda avermelhada e uma mensagem de erro abaixo
+                    setFieldState(true, "Código de barras já cadastrado");
+                } else {
+                    console.log("Não encontrado");
+                    setFieldState(false, "");
+                }
+
+                //travar botão de cadastro
+
+
+            })
+            .catch(error => {
+                // Em caso de erro, trate-o e defina o nome do medicamento como vazio e o input habilitado
+                console.error("Erro:", error);
+                setFieldState(false, "Erro ao verificar o código de barras. Tente novamente.");
+            });
+    };
 
     function handleSubmit(e: any) {
 
@@ -229,7 +261,17 @@ const FormMedicamentos: React.FC = () => {
 
             <ContainerForm title="Informações Básicas">
                 <Row>
-                    <CampoTexto label="Código de Barras" value={formData.codigo_Barras} name="codigo_Barras" tipo="text" className="col-md-4" onChange={handleChange} />
+                    <CampoTexto
+                        label="Código de Barras"
+                        value={formData.codigo_Barras}
+                        name="codigo_Barras"
+                        tipo="text"
+                        className="col-md-4"
+                        onChange={handleChange}
+                        onBlur={(e) => verificaCodigoBarras(parseInt(e.target.value), setFieldState)}
+                        errored={campoComErro}
+                        mensagemErro={mensagemErro}
+                    />
                     <CampoTexto label="Nome" value={formData.nome} name="nome" tipo="text" className="col-md-4" onChange={handleChange} />
                     <CampoTexto label="Apelido" value={formData.apelido} name="apelido" tipo="text" className="col-md-4" onChange={handleChange} />
                 </Row>
@@ -242,6 +284,7 @@ const FormMedicamentos: React.FC = () => {
                         e.preventDefault();
                         handleSubmit(e);
                     }}
+                    disabled={campoComErro}
                     />
                 </Row>
             </ContainerForm>

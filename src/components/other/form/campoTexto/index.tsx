@@ -7,12 +7,16 @@ interface CampoTextoProps {
     className?: string;
     onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
     onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
+    onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
     name: string;
     value?: any;
     disabled?: boolean;
+    errored?: boolean;
+    mensagemErro?: string;
+    children?: React.ReactNode;
 }
 
-const CampoTexto: React.FC<CampoTextoProps> = ({ label, value, name, tipo, className, disabled, onChange, onBlur }) => {
+const CampoTexto: React.FC<CampoTextoProps> = ({ label, value, name, tipo, className, disabled, onChange, onBlur, onFocus, errored, mensagemErro, children }) => {
     return (
         <ContainerCampoTexto className={className}>
             <Label>{label}</Label>
@@ -22,7 +26,6 @@ const CampoTexto: React.FC<CampoTextoProps> = ({ label, value, name, tipo, class
                         onChange(e);
                     }
                 }
-
             }
 
                 onBlur={
@@ -33,10 +36,23 @@ const CampoTexto: React.FC<CampoTextoProps> = ({ label, value, name, tipo, class
                     }
                 }
 
+                onFocus={
+                    (e) => {
+                        if (onFocus) {
+                            onFocus(e);
+                        }
+                    }
+                }
+                
                 name={name}
                 value={value}
                 disabled={disabled}
+                className={errored ? "errored_field" : ""}
             />
+
+            {errored && <span className="error_message">{mensagemErro}</span>}
+
+            {children}
         </ContainerCampoTexto>
     );
 };

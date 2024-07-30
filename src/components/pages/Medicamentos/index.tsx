@@ -8,10 +8,12 @@ import Alert from "../../other/modal/alert";
 import Confirm from "../../other/modal/confirm";
 import server from "../../../utils/data/server";
 import axios from "axios";
+import CampoTexto from "../../other/form/campoTexto";
 
 const Medicamentos: React.FC = () => {
 
     const [dados, setDados] = React.useState<any[]>([]);
+    const [filtro_busca, setFiltroBusca] = React.useState<string>('');
 
     //configura exibição do Alert
     const [alert, setAlert] = useState({
@@ -38,11 +40,11 @@ const Medicamentos: React.FC = () => {
                 const response = await axios.get(
                     `${server.url}${server.endpoints.medicamento}`,
                     {
-                        //parâmetros
+                        params: {
+                            filtro_busca: filtro_busca
+                        }
                     }
                 );
-
-                console.log("Dados:", response.data.$values);
                 setDados(response.data.$values);
 
             } catch (error) {
@@ -151,11 +153,44 @@ const Medicamentos: React.FC = () => {
             <Titulo titulo="Medicamentos" botao={{ texto: "Cadastrar", href: "/medicamentos/form" }} />
 
             <Filtro title="Filtrar">
-                <p>{"Medicamentos"}</p>
+
+                <div className="row">
+                    <CampoTexto label="Descrição" tipo="text" name="filtro_busca" value={filtro_busca} onChange={
+                        (e) => {
+                            setFiltroBusca(e.target.value);
+                        }
+                    } />
+                    <div className="col-md-12 d-flex justify-content-end">
+                        <button className="btn btn-primary ms-2" onClick={() => {
+                            const fetchData = async () => {
+                                try {
+                                    const response = await axios.get(
+                                        `${server.url}${server.endpoints.medicamento}`,
+                                        {
+                                            params: {
+                                                filtro_busca: filtro_busca
+                                            }
+                                        }
+                                    );
+
+                                    console.log("Dados:", response.data.$values);
+                                    setDados(response.data.$values);
+                                } catch (error) {
+                                    console.error("Erro:", error);
+                                }
+                            };
+
+                            fetchData();
+                        }}>{"Buscar"}</button>
+                        <button className="btn btn-warning ms-2" onClick={() => {
+                            window.location.href = `${server.url}${server.endpoints.medicamento}/gerar_excel`;
+                        }}>{"Gerar Excel"}</button>
+                    </div>
+                </div>
             </Filtro>
 
             <Resultado title="Resultado">
-                <table className="table">
+                <table className="table table-striped table-bordered">
                     <thead>
                         <tr>
                             <th>{"ID"}</th>
@@ -175,8 +210,8 @@ const Medicamentos: React.FC = () => {
                                 <td>{dado.apelido}</td>
                                 <td>{dado.estoque}</td>
                                 <td>
-                                    <a href={`/medicamentos/form/${dado.id}`} className="btn btn-warning">{"Editar"}</a>
-                                    <button className="btn btn-danger"
+                                    <a href={`/medicamentos/form/${dado.id}`} className="btn btn-warning btn-sm">{"Editar"}</a>
+                                    <button className="btn btn-danger btn-sm ms-1"
                                         onClick={() => handleExcluir(dado.id)}
                                     >{"Excluir"}</button>
                                 </td>

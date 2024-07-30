@@ -44,12 +44,6 @@ export const AlertFooter = styled.div`
 `;
 
 export const Button = styled.button`
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    background-color: #007bff;
-    color: white;
-    cursor: pointer;
 `;
 
 export const ButtonClose = styled.button`
@@ -83,5 +77,6 @@ export const AlertMessageSuccess = styled.p`
 
 export const AlertHeaderTitle = styled.h2`
     margin: 0;
+    font-size: 1.3rem;
 `;
 

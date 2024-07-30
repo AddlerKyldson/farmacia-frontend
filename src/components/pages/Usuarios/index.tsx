@@ -41,7 +41,7 @@ const Usuarios: React.FC = () => {
                 );
 
                 console.log("Dados:", response.data);
-                setDados(response.data);
+                setDados(response.data.$values);
 
             } catch (error) {
                 console.error("Erro:", error);
@@ -171,8 +171,8 @@ const Usuarios: React.FC = () => {
                                 <td>{dado.email}</td>
                                 <td>{dado.telefone}</td>
                                 <td>
-                                    <a href={`usuarios/form/${dado.id}`} className="btn btn-warning">{"Editar"}</a>
-                                    <button className="btn btn-danger"
+                                    <a href={`usuarios/form/${dado.id}`} className="btn btn-sm btn-warning">{"Editar"}</a>
+                                    <button className="btn btn-sm ms-1 btn-danger"
                                         onClick={() => handleExcluir(dado.id)}
                                     >{"Excluir"}</button>
                                 </td>

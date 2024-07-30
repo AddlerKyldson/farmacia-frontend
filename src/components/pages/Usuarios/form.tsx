@@ -10,6 +10,8 @@ import Alert from "../../other/modal/alert";
 import CampoSelect from "../../other/form/campoSelect";
 import axios from "axios";
 import server from "../../../utils/data/server";
+import { Container } from "react-bootstrap";
+import CampoCheckBox from "../../other/form/campoCheckBox";
 
 const FormUsuarios: React.FC = () => {
     const [Id, setId] = useState(0);
@@ -22,35 +24,130 @@ const FormUsuarios: React.FC = () => {
         logradouro: '',
         numero: '',
         complemento: '',
-        estado: '0',
-        cidade: '0',
+        id_Estado: '0',
+        id_Cidade: '0',
         bairro: '0',
+        tipo: '0',
         cep: '',
         senha: '',
         confirmacao_senha: '',
-        slug: ''
+        slug: '',
+        permissoes: ''
     });
 
-    const estados = [
-        { value: "0", label: "Selecione um Estado" },
-        { value: "1", label: "São Paulo" },
-        { value: "2", label: "Rio de Janeiro" },
-        { value: "3", label: "Minas Gerais" }
-    ];
+    const [Estados, setEstados] = useState<any[]>([]);
+    const [Cidades, setCidades] = useState<any[]>([]);
+    const [Bairros, setBairros] = useState<any[]>([]);
 
-    const cidades = [
-        { value: "0", label: "Selecione uma Cidade" },
-        { value: "1", label: "São Paulo" },
-        { value: "2", label: "Rio de Janeiro" },
-        { value: "3", label: "Belo Horizonte" }
-    ];
+    const [permissions, setPermissions] = useState({
+        permissao_farmacia: false,
+        permissao_vigilancia_sanitaria: false,
+        permissao_sim_sinasc: false,
+        permissao_sinan: false,
+        permissao_bolsa_familia: false
+    });
 
-    const bairros = [
-        { value: "0", label: "Selecione um Bairro" },
-        { value: "1", label: "São Paulo" },
-        { value: "2", label: "Rio de Janeiro" },
-        { value: "3", label: "Belo Horizonte" }
-    ];
+    const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, checked } = e.target;
+
+        setPermissions(prevState => ({
+            ...prevState,
+            [name]: checked
+        }));
+    };
+
+    //Carrega Estados
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+
+                const response = await axios.get(
+                    `${server.url}${server.endpoints.estado}`,
+                    {
+                        //parâmetros
+                    }
+                );
+
+                //ajustar array para que o campo value seja o id do estado e o campo label seja o nome do estado, e adiciona uma opção padrão com value 0 e label "Selecione"
+                response.data = response.data.$values.map((item: any) => {
+                    return { value: item.id, label: item.nome };
+                });
+
+                response.data.unshift({ value: 0, label: 'Selecione' });
+
+                setEstados(response.data);
+
+            } catch (error) {
+                console.error("Erro:", error);
+            }
+        };
+
+        fetchData();
+    }, []);
+
+    const loadCidades = async (id: number) => {
+
+        try {
+
+            const response = await axios.get(
+                `${server.url}${server.endpoints.cidade}/Estado/${id}`,
+                {
+                    //parâmetros
+                }
+            );
+
+            if (response.data.length === 0) {
+                setCidades([{ value: 0, label: 'Nenhuma cidade encontrada' }]);
+                return;
+            }
+
+            //ajustar array para que o campo value seja o id do estado e o campo label seja o nome do estado, e adiciona uma opção padrão com value 0 e label "Selecione"
+            response.data = response.data.$values.map((item: any) => {
+                return { value: item.id, label: item.nome };
+            });
+
+            response.data.unshift({ value: 0, label: 'Selecione' });
+
+            setCidades(response.data);
+
+        } catch (error) {
+
+            console.error("Erro:", error);
+        }
+    }
+
+    const loadBairros = async (id: number) => {
+
+        try {
+
+            const response = await axios.get(
+                `${server.url}${server.endpoints.bairro}/Cidade/${id}`,
+                {
+                    //parâmetros
+                }
+            );
+
+            if (response.data.length === 0) {
+                setCidades([{ value: 0, label: 'Nenhum bairro encontrado' }]);
+                return;
+            }
+
+            //ajustar array para que o campo value seja o id do estado e o campo label seja o nome do estado, e adiciona uma opção padrão com value 0 e label "Selecione"
+            response.data = response.data.$values.map((item: any) => {
+                return { value: item.id, label: item.nome };
+            });
+
+            response.data.unshift({ value: 0, label: 'Selecione' });
+
+            setBairros(response.data);
+
+        } catch (error) {
+
+            console.error("Erro:", error);
+        }
+    }
+
+
 
     //configura exibição do Alert
     const [alert, setAlert] = useState({
@@ -78,6 +175,11 @@ const FormUsuarios: React.FC = () => {
             //buscar os dados do usuário
             axios.get(`${server.url}${server.endpoints.usuario}/${id}`).then(response => {
 
+                console.log("Dados:", response.data);
+
+                let permissions = JSON.parse(response.data.permissoes);
+                setPermissions(permissions);
+
                 setFormData(response.data);
 
             }).catch(error => {
@@ -97,6 +199,14 @@ const FormUsuarios: React.FC = () => {
             ...prevState,
             [name]: value
         }));
+
+        if (name === 'id_Estado') {
+            loadCidades(parseInt(value));
+        }
+
+        if (name === 'id_Cidade') {
+            loadBairros(parseInt(value));
+        }
     };
 
     function validaCampos(value = '', nome_campo = '', obrigatorio = false, tamanho = null) {
@@ -128,8 +238,8 @@ const FormUsuarios: React.FC = () => {
         var cpf = validaCampos(formData.cpf, 'CPF', true);
         var cns = validaCampos(formData.cns, 'Cartão SUS', true);
         var logradouro = validaCampos(formData.logradouro, 'Logradouro', true);
-        var estado = validaCampos(formData.estado, 'Estado', true);
-        var cidade = validaCampos(formData.cidade, 'Cidade', true);
+        var estado = validaCampos(formData.id_Estado, 'Estado', true);
+        var cidade = validaCampos(formData.id_Cidade, 'idCidade', true);
         var bairro = validaCampos(formData.bairro, 'Bairro', true);
         var cep = validaCampos(formData.cep, 'CEP', true);
         var senha = validaCampos(formData.senha, 'Senha', true);
@@ -209,6 +319,7 @@ const FormUsuarios: React.FC = () => {
 
             var slug = formData.nome.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
             formData.slug = slug;
+            formData.permissoes = JSON.stringify(permissions);
 
             if (Id === 0) {
                 axios.post(`${server.url}${server.endpoints.usuario}`, formData).then(response => {
@@ -307,15 +418,48 @@ const FormUsuarios: React.FC = () => {
 
             <ContainerForm title="Endereço">
                 <Row>
-                    <CampoSelect label="Estado" name="estado" value={formData.estado} options={estados} className="col-md-2" onChange={handleChange} />
-                    <CampoSelect label="Cidade" name="cidade" value={formData.cidade} options={cidades} className="col-md-4" onChange={handleChange} />
-                    <CampoSelect label="Bairro" name="bairro" value={formData.bairro} options={bairros} className="col-md-4" onChange={handleChange} />
+                    <CampoSelect label="Estado" name="id_Estado" value={formData.id_Estado} options={Estados} className="col-md-2" onChange={handleChange} />
+                    <CampoSelect label="Cidade" name="id_Cidade" value={formData.id_Cidade} options={Cidades} className="col-md-4" onChange={handleChange} />
+                    <CampoSelect label="Bairro" name="bairro" value={formData.bairro} options={Bairros} className="col-md-4" onChange={handleChange} />
                 </Row>
                 <Row>
                     <CampoTexto label="Logradouro" name="logradouro" value={formData.logradouro} tipo="text" className="col-md-4" onChange={handleChange} />
                     <CampoTexto label="Nº" name="numero" tipo="text" value={formData.numero} className="col-md-2" onChange={handleChange} />
                     <CampoTexto label="CEP" name="cep" tipo="text" value={formData.cep} className="col-md-2" onChange={handleChange} />
                     <CampoTexto label="Complemento" name="complemento" value={formData.complemento} tipo="text" className="col-md-4" onChange={handleChange} />
+                </Row>
+            </ContainerForm>
+
+            <ContainerForm title="Permissões">
+
+                <Row>
+                    <CampoSelect label="Tipo" name="tipo" value={formData.tipo} options={[
+                        { value: '0', label: 'Selecione' },
+                        { value: '1', label: 'Administrador' },
+                        { value: '2', label: 'Gestor' },
+                        { value: '3', label: 'Enfermeiro' },
+                        { value: '4', label: 'Agente de Saúde' },
+                        { value: '5', label: 'Atendente' },
+                        { value: '6', label: 'Farmacêutico' },
+                        { value: '7', label: 'Vigilante Sanitário' },
+                        { value: '8', label: 'Digitador' }
+                    ]} className="col-md-4" onChange={handleChange} />
+                </Row>
+
+                <Row>
+                    <CampoCheckBox label="Farmácia" name="permissao_farmacia" value="1" checked={permissions.permissao_farmacia} onChange={handleCheckboxChange} />
+                </Row>
+                <Row>
+                    <CampoCheckBox label="Vigilância Sanitária" name="permissao_vigilancia_sanitaria" value="1" checked={permissions.permissao_vigilancia_sanitaria} onChange={handleCheckboxChange} />
+                </Row>
+                <Row>
+                    <CampoCheckBox label="SIM/SINASC" name="permissao_sim_sinasc" value="1" checked={permissions.permissao_sim_sinasc} onChange={handleCheckboxChange} />
+                </Row>
+                <Row>
+                    <CampoCheckBox label="SINAN" name="permissao_sinan" value="1" checked={permissions.permissao_sinan} onChange={handleCheckboxChange} />
+                </Row>
+                <Row>
+                    <CampoCheckBox label="Bolsa Família" name="permissao_bolsa_familia" value="1" checked={permissions.permissao_bolsa_familia} onChange={handleCheckboxChange} />
                 </Row>
             </ContainerForm>
 

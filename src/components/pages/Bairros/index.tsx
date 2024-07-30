@@ -42,8 +42,7 @@ const Bairros: React.FC = () => {
                     }
                 );
 
-                console.log("Dados:", response.data);
-                setDados(response.data);
+                setDados(response.data.$values);
 
             } catch (error) {
                 console.error("Erro:", error);

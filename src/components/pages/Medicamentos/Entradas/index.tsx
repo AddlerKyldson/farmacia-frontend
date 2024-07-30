@@ -8,10 +8,13 @@ import server from "../../../../utils/data/server";
 import axios from "axios";
 import Alert from "../../../other/modal/alert";
 import Confirm from "../../../other/modal/confirm";
+import CampoTexto from "../../../other/form/campoTexto";
+import { Button } from "react-bootstrap";
 
 const EntradasMedicamentos: React.FC = () => {
 
     const [dados, setDados] = React.useState<any[]>([]);
+    const [filtro_busca, setFiltroBusca] = React.useState<string>('');
 
     //configura exibição do Alert
     const [alert, setAlert] = useState({
@@ -34,17 +37,18 @@ const EntradasMedicamentos: React.FC = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-
                 const response = await axios.get(
                     `${server.url}${server.endpoints.medicamento_movimentacao}`,
                     {
-                        //parâmetros
+                        params: {
+                            tipo: '1', // substitua 'seuTipo' pelo valor que você deseja enviar
+                            filtro_busca: filtro_busca
+                        }
                     }
                 );
 
                 console.log("Dados:", response.data.$values);
                 setDados(response.data.$values);
-
             } catch (error) {
                 console.error("Erro:", error);
             }
@@ -58,7 +62,7 @@ const EntradasMedicamentos: React.FC = () => {
         setConfirm({
             show: true,
             success: false,
-            title: 'Excluir Cidade',
+            title: 'Excluir Entrada',
             message: ['Deseja realmente excluir esta entrada?'],
             onConfirm: async () => {
                 try {
@@ -151,11 +155,42 @@ const EntradasMedicamentos: React.FC = () => {
             <Titulo titulo="Entradas de Medicamentos" botao={{ texto: "Cadastrar", href: "/medicamentos/entradas/form" }} />
 
             <Filtro title="Filtrar">
-                <p>{"Entradas de Medicamentos"}</p>
+
+                <div className="row">
+                    <CampoTexto label="Descrição" tipo="text" name="filtro_busca" value={filtro_busca} onChange={
+                        (e) => {
+                            setFiltroBusca(e.target.value);
+                        }
+                    } />
+                    <div className="col-md-12 d-flex justify-content-end">
+                        <button className="btn btn-primary ms-2" onClick={() => {
+                            const fetchData = async () => {
+                                try {
+                                    const response = await axios.get(
+                                        `${server.url}${server.endpoints.medicamento_movimentacao}`,
+                                        {
+                                            params: {
+                                                tipo: '1', // substitua 'seuTipo' pelo valor que você deseja enviar
+                                                filtro_busca: filtro_busca
+                                            }
+                                        }
+                                    );
+
+                                    console.log("Dados:", response.data.$values);
+                                    setDados(response.data.$values);
+                                } catch (error) {
+                                    console.error("Erro:", error);
+                                }
+                            };
+
+                            fetchData();
+                        }}>{"Buscar"}</button>
+                    </div>
+                </div>
             </Filtro>
 
             <Resultado title="Resultado">
-                <table className="table">
+                <table className="table table-bordered table-striped">
                     <thead>
                         <tr>
                             <th>{"ID"}</th>
@@ -172,10 +207,10 @@ const EntradasMedicamentos: React.FC = () => {
                                 <td>{
                                     //Data formatada
                                     new Date(dado.data).toLocaleDateString()
-                                    }</td>
+                                }</td>
                                 <td>
-                                    <a href={`/medicamentos/entradas/form/${dado.id}`} className="btn btn-warning">{"Editar"}</a>
-                                    <button className="btn btn-danger"
+                                    <a href={`/medicamentos/entradas/form/${dado.id}`} className="btn btn-warning btn-sm">{"Editar"}</a>
+                                    <button className="btn btn-danger btn-sm ms-1"
                                         onClick={() => handleExcluir(dado.id)}
                                     >{"Excluir"}</button>
                                 </td>
