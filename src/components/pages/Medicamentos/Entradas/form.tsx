@@ -147,6 +147,38 @@ const FormEntradasMedicamentos: React.FC = () => {
         }
     };
 
+    const verificarApiCodigoBarras = (codigo_barras: string, index: number) => {
+        let url_api = `https://api.cosmos.bluesoft.com.br/gtins/${codigo_barras}.json`
+        let headers = {
+            'Content-Type': 'application/json',
+            'X-Cosmos-Token': 'VXdglglSK-O9s5DzEYkMcQ'
+        }
+
+        axios.get(url_api, { headers: headers })
+            .then(response => {
+                console.log("Resposta API:", response.data.description);
+
+                let nome = response.data.description;
+                
+                // Atualizando o estado de medicamentos
+                setMedicamentos(prevMedicamentos => prevMedicamentos.map((med, i) => {
+                    if (i !== index) {
+                        return med;
+                    }
+                    return {
+                        ...med,
+                        nome: nome,
+                        disabled: true
+                    };
+                }));
+
+            })
+            .catch(error => {
+                console.error("Erro:", error);
+            });
+
+    }
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
 
@@ -332,6 +364,9 @@ const FormEntradasMedicamentos: React.FC = () => {
                     novosMedicamentos[index] = novoMedicamento;
                     setMedicamentos(novosMedicamentos);
                 } else {
+
+                    verificarApiCodigoBarras(codigo_barras.toString(), index);
+
                     // Se não houver resposta, mantenha o nome vazio e o input habilitado
                     const novoMedicamento = { ...medicamentos[index], nome: '', disabled: false };
                     const novosMedicamentos = [...medicamentos];

@@ -9,13 +9,13 @@ const Menu: React.FC = () => {
     const { user } = useAuth();
 
     const permissoes = user?.permissoes;
-    const user_type = user?.role;
+    const user_type = user?.role ? user?.role : '0';
     const user_id = user?.id;
     //converter permissoes para json
     const permissoesJson = JSON.parse(permissoes || '{}');
 
-    console.log(user_type);
-    console.log(user_id);
+    //console.log(user_type);
+    //console.log(user_id);
 
     const [isMedicamentosSubMenuVisible, setIsMedicamentosSubMenuVisible] = useState(false);
     const [isAdministracaoSubMenuVisible, setIsAdministracaoSubMenuVisible] = useState(false);
@@ -68,21 +68,29 @@ const Menu: React.FC = () => {
                 <MenuItem>
                     <MenuLink href="/unidades-de-saude">{"Unidades de Saúde"}</MenuLink>
                 </MenuItem>
-                <MenuItem onClick={toggleMedicamentosSubMenu}>
-                    <MenuLink>{"Farmácia"}</MenuLink>
-                </MenuItem>
-                {isMedicamentosSubMenuVisible && (
-                    <SubMenu>
-                        <SubMenuItem>
-                            <MenuLink href="/medicamentos">Itens</MenuLink>
-                        </SubMenuItem>
-                        <SubMenuItem>
-                            <MenuLink href="/medicamentos/entradas">Entradas</MenuLink>
-                        </SubMenuItem>
-                        <SubMenuItem>
-                            <MenuLink href="/medicamentos/saidas">Saídas</MenuLink>
-                        </SubMenuItem>
-                    </SubMenu>
+                {permissoesJson.permissao_farmacia && (
+                    <>
+                        <MenuItem onClick={toggleMedicamentosSubMenu}>
+                            <MenuLink>{"Farmácia"}</MenuLink>
+                        </MenuItem>
+                        {isMedicamentosSubMenuVisible && (
+                            <SubMenu>
+                                <SubMenuItem>
+                                    <MenuLink href="/medicamentos">Itens</MenuLink>
+                                </SubMenuItem>
+                                {['1', '2', '8'].includes(user_type) && (
+                                    <>
+                                        <SubMenuItem>
+                                            <MenuLink href="/medicamentos/entradas">Entradas</MenuLink>
+                                        </SubMenuItem>
+                                        <SubMenuItem>
+                                            <MenuLink href="/medicamentos/saidas">Saídas</MenuLink>
+                                        </SubMenuItem>
+                                    </>
+                                )}
+                            </SubMenu>
+                        )}
+                    </>
                 )}
                 {permissoesJson.permissao_vigilancia_sanitaria && (
                     <>

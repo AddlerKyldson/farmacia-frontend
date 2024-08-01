@@ -9,13 +9,20 @@ import Confirm from "../../other/modal/confirm";
 import server from "../../../utils/data/server";
 import axios from "axios";
 import CampoTexto from "../../other/form/campoTexto";
+import { useAuth } from "../../../context/AuthContext";
+
+const ITEMS_PER_PAGE = 20;
 
 const Medicamentos: React.FC = () => {
+    const { user } = useAuth();
+    const [dados, setDados] = useState<any[]>([]);
+    const [total, setTotal] = useState<number>(0);
+    const [page, setPage] = useState<number>(1);
+    const [filtroBusca, setFiltroBusca] = useState<string>(''); // Input field state
+    const [searchTerm, setSearchTerm] = useState<string>(''); // Termo de busca efetivo
 
-    const [dados, setDados] = React.useState<any[]>([]);
-    const [filtro_busca, setFiltroBusca] = React.useState<string>('');
+    const user_type = user?.role ? user?.role : '0';
 
-    //configura exibição do Alert
     const [alert, setAlert] = useState({
         show: false,
         success: false,
@@ -24,6 +31,7 @@ const Medicamentos: React.FC = () => {
         onConfirm: () => { },
         onClose: () => { }
     });
+
     const [confirm, setConfirm] = useState({
         show: false,
         success: false,
@@ -36,42 +44,41 @@ const Medicamentos: React.FC = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-
                 const response = await axios.get(
                     `${server.url}${server.endpoints.medicamento}`,
                     {
                         params: {
-                            filtro_busca: filtro_busca
+                            filtro_busca: searchTerm,
+                            page: page,
+                            perPage: ITEMS_PER_PAGE
                         }
                     }
                 );
-                setDados(response.data.$values);
 
+                setDados(response.data.dados.$values);
+                setTotal(response.data.total);
             } catch (error) {
                 console.error("Erro:", error);
             }
         };
 
         fetchData();
-    }, []);
+    }, [page, searchTerm]);
+
+    const totalPages = Math.ceil(total / ITEMS_PER_PAGE);
 
     const handleExcluir = async (id: number) => {
-
         setConfirm({
             show: true,
             success: false,
-            title: 'Excluir Cidade',
+            title: 'Excluir Medicamento',
             message: ['Deseja realmente excluir este medicamento?'],
             onConfirm: async () => {
                 try {
-                    const response = await axios.delete(
-                        `${server.url}${server.endpoints.medicamento}/${id}`,
-                        {
-                            //parâmetros
-                        }
+                    await axios.delete(
+                        `${server.url}${server.endpoints.medicamento}/${id}`
                     );
 
-                    console.log("Dados:", response.data);
                     setDados(dados.filter(dado => dado.id !== id));
 
                     setAlert({
@@ -100,7 +107,6 @@ const Medicamentos: React.FC = () => {
                             });
                         }
                     });
-
                 } catch (error) {
                     console.error("Erro:", error);
                     setAlert({
@@ -142,46 +148,26 @@ const Medicamentos: React.FC = () => {
                 });
             }
         });
+    };
 
-    }
+    const handleSearch = () => {
+        setSearchTerm(filtroBusca);
+        setPage(1); // Resetar para a primeira página ao buscar
+    };
 
     return (
         <Layout>
-
             <Breadcrumb paginas={[{ texto: "Home", href: '/' }, { texto: "Medicamentos" }]} />
 
-            <Titulo titulo="Medicamentos" botao={{ texto: "Cadastrar", href: "/medicamentos/form" }} />
+            <Titulo titulo="Medicamentos" botao={['1', '2', '8'].includes(user_type) ? { texto: "Cadastrar", href: "/medicamentos/form" } : undefined} />
 
             <Filtro title="Filtrar">
-
                 <div className="row">
-                    <CampoTexto label="Descrição" tipo="text" name="filtro_busca" value={filtro_busca} onChange={
-                        (e) => {
-                            setFiltroBusca(e.target.value);
-                        }
+                    <CampoTexto label="Descrição" tipo="text" name="filtro_busca" value={filtroBusca} onChange={
+                        (e) => setFiltroBusca(e.target.value)
                     } />
                     <div className="col-md-12 d-flex justify-content-end">
-                        <button className="btn btn-primary ms-2" onClick={() => {
-                            const fetchData = async () => {
-                                try {
-                                    const response = await axios.get(
-                                        `${server.url}${server.endpoints.medicamento}`,
-                                        {
-                                            params: {
-                                                filtro_busca: filtro_busca
-                                            }
-                                        }
-                                    );
-
-                                    console.log("Dados:", response.data.$values);
-                                    setDados(response.data.$values);
-                                } catch (error) {
-                                    console.error("Erro:", error);
-                                }
-                            };
-
-                            fetchData();
-                        }}>{"Buscar"}</button>
+                        <button className="btn btn-primary ms-2" onClick={handleSearch}>{"Buscar"}</button>
                         <button className="btn btn-warning ms-2" onClick={() => {
                             window.location.href = `${server.url}${server.endpoints.medicamento}/gerar_excel`;
                         }}>{"Gerar Excel"}</button>
@@ -198,7 +184,7 @@ const Medicamentos: React.FC = () => {
                             <th>{"Nome"}</th>
                             <th>{"Apelido"}</th>
                             <th>{"Estoque"}</th>
-                            <th>{"Opções"}</th>
+                            {['1', '2', '8'].includes(user_type) && <th>{"Opções"}</th>}
                         </tr>
                     </thead>
                     <tbody>
@@ -209,16 +195,32 @@ const Medicamentos: React.FC = () => {
                                 <td>{dado.nome}</td>
                                 <td>{dado.apelido}</td>
                                 <td>{dado.estoque}</td>
-                                <td>
-                                    <a href={`/medicamentos/form/${dado.id}`} className="btn btn-warning btn-sm">{"Editar"}</a>
-                                    <button className="btn btn-danger btn-sm ms-1"
-                                        onClick={() => handleExcluir(dado.id)}
-                                    >{"Excluir"}</button>
-                                </td>
+                                {['1', '2', '8'].includes(user_type) && (
+                                    <td>
+                                        <a href={`/medicamentos/form/${dado.id}`} className="btn btn-warning btn-sm">{"Editar"}</a>
+                                        <button className="btn btn-danger btn-sm ms-1" onClick={() => handleExcluir(dado.id)}>{"Excluir"}</button>
+                                    </td>
+                                )}
                             </tr>
                         ))}
                     </tbody>
                 </table>
+
+                <div className="d-flex justify-content-center">
+                    <ul className="pagination">
+                        <li className={`page-item ${page === 1 ? 'disabled' : ''}`}>
+                            <a className="page-link" href="#" onClick={() => setPage(page - 1)} tabIndex={-1} aria-disabled={page === 1}>{"Anterior"}</a>
+                        </li>
+                        {[...Array(totalPages)].map((_, index) => (
+                            <li key={index} className={`page-item ${page === index + 1 ? 'active' : ''}`}>
+                                <a className="page-link" href="#" onClick={() => setPage(index + 1)}>{index + 1}</a>
+                            </li>
+                        ))}
+                        <li className={`page-item ${page === totalPages ? 'disabled' : ''}`}>
+                            <a className="page-link" href="#" onClick={() => setPage(page + 1)} tabIndex={-1} aria-disabled={page === totalPages}>{"Próximo"}</a>
+                        </li>
+                    </ul>
+                </div>
             </Resultado>
 
             <Alert
@@ -238,7 +240,6 @@ const Medicamentos: React.FC = () => {
                 onConfirm={confirm.onConfirm}
                 onClose={confirm.onClose}
             />
-
         </Layout>
     );
 };

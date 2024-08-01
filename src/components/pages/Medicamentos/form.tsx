@@ -33,7 +33,7 @@ const FormMedicamentos: React.FC = () => {
     //Configuração campo Código de Barras
     const [campoComErro, setCampoComErro] = useState(false);
     const [mensagemErro, setMensagemErro] = useState("");
-    
+
     const setFieldState = (errored: boolean, mensagemErro: string) => {
         setCampoComErro(errored);
         setMensagemErro(mensagemErro);
@@ -90,7 +90,7 @@ const FormMedicamentos: React.FC = () => {
         return { erro, mensagem_erro };
     }
 
-    const verificaCodigoBarras = (codigo_barras: number, setFieldState: (errored: boolean, mensagemErro: string) => void) => {
+    const verificaCodigoBarras = (codigo_barras: string, setFieldState: (errored: boolean, mensagemErro: string) => void) => {
         axios.get(`${server.url}${server.endpoints.medicamento}/CodigoBarras/${codigo_barras}`)
             .then(response => {
                 if (response.data) {
@@ -98,6 +98,9 @@ const FormMedicamentos: React.FC = () => {
                     // Se o medicamento já existir, deixar campo com borda avermelhada e uma mensagem de erro abaixo
                     setFieldState(true, "Código de barras já cadastrado");
                 } else {
+
+                    verificarApiCodigoBarras(codigo_barras);
+
                     console.log("Não encontrado");
                     setFieldState(false, "");
                 }
@@ -112,6 +115,33 @@ const FormMedicamentos: React.FC = () => {
                 setFieldState(false, "Erro ao verificar o código de barras. Tente novamente.");
             });
     };
+
+    const verificarApiCodigoBarras = (codigo_barras: string) => {
+        let url_api = `https://api.cosmos.bluesoft.com.br/gtins/${codigo_barras}.json`
+        let headers = {
+            'Content-Type': 'application/json',
+            'X-Cosmos-Token': 'VXdglglSK-O9s5DzEYkMcQ'
+        }
+
+        axios.get(url_api, { headers: headers })
+            .then(response => {
+                console.log("Resposta API:", response.data.description);
+
+                let nome = response.data.description;
+                let apelido = response.data.description;
+
+                setFormData(prevState => ({
+                    ...prevState,
+                    nome: nome,
+                    apelido: apelido
+                }));
+
+            })
+            .catch(error => {
+                console.error("Erro:", error);
+            });
+
+    }
 
     function handleSubmit(e: any) {
 
@@ -264,7 +294,7 @@ const FormMedicamentos: React.FC = () => {
                         tipo="text"
                         className="col-md-4"
                         onChange={handleChange}
-                        onBlur={(e) => verificaCodigoBarras(parseInt(e.target.value), setFieldState)}
+                        onBlur={(e) => verificaCodigoBarras(e.target.value, setFieldState)}
                         errored={campoComErro}
                         mensagemErro={mensagemErro}
                     />
@@ -280,7 +310,7 @@ const FormMedicamentos: React.FC = () => {
                         e.preventDefault();
                         handleSubmit(e);
                     }}
-                    disabled={campoComErro}
+                        disabled={campoComErro}
                     />
                 </Row>
             </ContainerForm>

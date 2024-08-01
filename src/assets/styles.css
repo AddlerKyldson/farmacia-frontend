@@ -18,7 +18,7 @@
     overflow-y: auto;
     z-index: 999;
     display: none;
-    bottom: -47px;
+    top: 80px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);   
     border-radius: 0px !important; 
     background: #333;
