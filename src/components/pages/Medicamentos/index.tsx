@@ -163,7 +163,7 @@ const Medicamentos: React.FC = () => {
 
             <Filtro title="Filtrar">
                 <div className="row">
-                    <CampoTexto label="Descrição" tipo="text" name="filtro_busca" value={filtroBusca} onChange={
+                    <CampoTexto label="Descrição" tipo="text" name="filtro_busca" placeholder="Buscar por código de barras, nome ou apelido" value={filtroBusca} onChange={
                         (e) => setFiltroBusca(e.target.value)
                     } />
                     <div className="col-md-12 d-flex justify-content-end">

@@ -14,9 +14,10 @@ interface CampoTextoProps {
     errored?: boolean;
     mensagemErro?: string;
     children?: React.ReactNode;
+    placeholder?: string;
 }
 
-const CampoTexto: React.FC<CampoTextoProps> = ({ label, value, name, tipo, className, disabled, onChange, onBlur, onFocus, errored, mensagemErro, children }) => {
+const CampoTexto: React.FC<CampoTextoProps> = ({ label, value, name, tipo, className, disabled, onChange, onBlur, onFocus, placeholder, errored, mensagemErro, children }) => {
     return (
         <ContainerCampoTexto className={className}>
             <Label>{label}</Label>
@@ -43,11 +44,12 @@ const CampoTexto: React.FC<CampoTextoProps> = ({ label, value, name, tipo, class
                         }
                     }
                 }
-                
+
                 name={name}
                 value={value}
                 disabled={disabled}
                 className={errored ? "errored_field" : ""}
+                placeholder={placeholder}
             />
 
             {errored && <span className="error_message">{mensagemErro}</span>}

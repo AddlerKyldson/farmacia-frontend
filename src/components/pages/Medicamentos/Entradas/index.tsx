@@ -9,11 +9,13 @@ import axios from "axios";
 import Alert from "../../../other/modal/alert";
 import Confirm from "../../../other/modal/confirm";
 import CampoTexto from "../../../other/form/campoTexto";
-import { Button } from "react-bootstrap";
+
+const ITEMS_PER_PAGE = 20;
 
 const EntradasMedicamentos: React.FC = () => {
-
     const [dados, setDados] = React.useState<any[]>([]);
+    const [total, setTotal] = useState<number>(0);
+    const [page, setPage] = useState<number>(1);
     const [filtro_busca, setFiltroBusca] = React.useState<string>('');
 
     //configura exibição do Alert
@@ -42,13 +44,17 @@ const EntradasMedicamentos: React.FC = () => {
                     {
                         params: {
                             tipo: '1', // substitua 'seuTipo' pelo valor que você deseja enviar
-                            filtro_busca: filtro_busca
+                            filtro_busca: filtro_busca,
+                            page: page,
+                            perPage: ITEMS_PER_PAGE
                         }
                     }
                 );
 
-                console.log("Dados:", response.data.$values);
-                setDados(response.data.$values);
+                console.log("Dados:", response.data.dados.$values);
+                
+                setDados(response.data.dados.$values);
+                setTotal(response.data.total);
             } catch (error) {
                 console.error("Erro:", error);
             }
@@ -56,6 +62,8 @@ const EntradasMedicamentos: React.FC = () => {
 
         fetchData();
     }, []);
+
+    const totalPages = Math.ceil(total / ITEMS_PER_PAGE);
 
     const handleExcluir = async (id: number) => {
 
@@ -218,6 +226,23 @@ const EntradasMedicamentos: React.FC = () => {
                         ))}
                     </tbody>
                 </table>
+
+                <div className="d-flex justify-content-center">
+                    <ul className="pagination">
+                        <li className={`page-item ${page === 1 ? 'disabled' : ''}`}>
+                            <a className="page-link" href="#" onClick={() => setPage(page - 1)} tabIndex={-1} aria-disabled={page === 1}>{"Anterior"}</a>
+                        </li>
+                        {[...Array(totalPages)].map((_, index) => (
+                            <li key={index} className={`page-item ${page === index + 1 ? 'active' : ''}`}>
+                                <a className="page-link" href="#" onClick={() => setPage(index + 1)}>{index + 1}</a>
+                            </li>
+                        ))}
+                        <li className={`page-item ${page === totalPages ? 'disabled' : ''}`}>
+                            <a className="page-link" href="#" onClick={() => setPage(page + 1)} tabIndex={-1} aria-disabled={page === totalPages}>{"Próximo"}</a>
+                        </li>
+                    </ul>
+                </div>
+
             </Resultado>
 
             <Alert

@@ -20,12 +20,16 @@ const Menu: React.FC = () => {
     const [isMedicamentosSubMenuVisible, setIsMedicamentosSubMenuVisible] = useState(false);
     const [isAdministracaoSubMenuVisible, setIsAdministracaoSubMenuVisible] = useState(false);
     const [isVigilanciaSubMenuVisible, setIsVigilanciaSubMenuVisible] = useState(false);
+    const [isSimsinascSubMenuVisible, setIsSimsinascSubMenuVisible] = useState(false);
+    const [isSinanSubMenuVisible, setIsSinanSubMenuVisible] = useState(false);
+    const [isBolsaFamiliaSubMenuVisible, setIsBolsaFamiliaSubMenuVisible] = useState(false);
 
     const toggleMedicamentosSubMenu = () => setIsMedicamentosSubMenuVisible(!isMedicamentosSubMenuVisible);
     const toggleAdministracaoSubMenu = () => setIsAdministracaoSubMenuVisible(!isAdministracaoSubMenuVisible);
     const toggleVigilanciaSubMenu = () => setIsVigilanciaSubMenuVisible(!isVigilanciaSubMenuVisible);
-
-
+    const toggleSimsinascSubMenu = () => setIsSimsinascSubMenuVisible(!isSimsinascSubMenuVisible);
+    const toggleSinanSubMenu = () => setIsSinanSubMenuVisible(!isSinanSubMenuVisible);
+    const toggleBolsaFamiliaSubMenu = () => setIsBolsaFamiliaSubMenuVisible(!isBolsaFamiliaSubMenuVisible);
 
     const handleLogout = () => {
         logout();
@@ -64,10 +68,6 @@ const Menu: React.FC = () => {
                         )}
                     </>
                 )}
-
-                <MenuItem>
-                    <MenuLink href="/unidades-de-saude">{"Unidades de Saúde"}</MenuLink>
-                </MenuItem>
                 {permissoesJson.permissao_farmacia && (
                     <>
                         <MenuItem onClick={toggleMedicamentosSubMenu}>
@@ -92,7 +92,49 @@ const Menu: React.FC = () => {
                         )}
                     </>
                 )}
-                {permissoesJson.permissao_vigilancia_sanitaria && (
+                {permissoesJson.permissao_sim_sinasc && (
+                    <>
+                        <MenuItem onClick={toggleSimsinascSubMenu}>
+                            <MenuLink>{"SIM/SINASC"}</MenuLink>
+                        </MenuItem>
+                        {isSimsinascSubMenuVisible && (
+                            <SubMenu>
+                                <SubMenuItem>
+                                    <MenuLink href="/investigacoes-obito">{"Investigações de Óbito"}</MenuLink>
+                                </SubMenuItem>
+                            </SubMenu>
+                        )}
+                    </>
+                )}
+                {permissoesJson.permissao_sinan && (
+                    <>
+                        <MenuItem onClick={toggleSinanSubMenu}>
+                            <MenuLink>{"SINAN"}</MenuLink>
+                        </MenuItem>
+                        {isSinanSubMenuVisible && (
+                            <SubMenu>
+                                <SubMenuItem>
+                                    <MenuLink href="/notificacoes-negativas">{"Notificações Negativas"}</MenuLink>
+                                </SubMenuItem>
+                            </SubMenu>
+                        )}
+                    </>
+                )}
+                {permissoesJson.permissao_bolsa_familia && (
+                    <>
+                        <MenuItem onClick={toggleBolsaFamiliaSubMenu}>
+                            <MenuLink>{"SINAN"}</MenuLink>
+                        </MenuItem>
+                        {isBolsaFamiliaSubMenuVisible && (
+                            <SubMenu>
+                                <SubMenuItem>
+                                    <MenuLink href="/notificacoes-negativas">{"Notificações Negativas"}</MenuLink>
+                                </SubMenuItem>
+                            </SubMenu>
+                        )}
+                    </>
+                )}
+                {['1'].includes(user_type) && (
                     <>
                         <MenuItem onClick={toggleAdministracaoSubMenu}>
                             <MenuLink>{"Administração"}</MenuLink>
@@ -111,6 +153,9 @@ const Menu: React.FC = () => {
                                 <SubMenuItem>
                                     <MenuLink href="/bairros">Bairros</MenuLink>
                                 </SubMenuItem>
+                                <MenuItem>
+                                    <MenuLink href="/unidades-de-saude">{"Unidades de Saúde"}</MenuLink>
+                                </MenuItem>
                                 <SubMenuItem>
                                     <MenuLink href="/cidadaos">{"Cidadãos"}</MenuLink>
                                 </SubMenuItem>
