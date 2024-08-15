@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Layout from "../../structure/Layout";
 import Breadcrumb from "../../other/breadCrumb";
 import Titulo from "../../other/tituloPage";
@@ -8,8 +8,33 @@ import CampoSelect from "../../other/form/campoSelect";
 import BotaoSubmit from "../../other/form/botaoSubmit";
 import Row from "../../other/grid/row";
 import Alert from "../../other/modal/alert";
+import axios from "axios";
+import server from "../../../utils/data/server";
+import BotaoExcluir from "../../other/form/botaoExcluir";
+
+interface ResponsaveisLegais {
+    nome_responsavel: string;
+    cpf: string;
+    escolaridade: string;
+    email: string;
+}
+
+interface ResponsaveisTecnicos {
+    nome_responsavel: string;
+    cpf: string;
+    escolaridade: string;
+    formacao: string;
+    especializacao: string;
+    registro_conselho: string;
+    email: string;
+}
 
 const FormularioEstabelecimentos: React.FC = () => {
+    const [Id, setId] = useState(0);
+
+    const [responsaveisLegais, setResponsaveisLegais] = useState<ResponsaveisLegais[]>([]);
+    const [responsaveisTecnicos, setResponsaveisTecnicos] = useState<ResponsaveisTecnicos[]>([]);
+
     const [formData, setFormData] = useState({
         razao_social: '',
         nome_fantasia: '',
@@ -20,26 +45,212 @@ const FormularioEstabelecimentos: React.FC = () => {
         inscricao_estadual: '',
         inscricao_municipal: '',
         logradouro: '',
-        estado: '',
-        cidade: '',
-        bairro: '',
+        id_estado: '',
+        id_cidade: '',
+        id_bairro: '',
         cep: '',
         complemento: '',
         telefone: '',
         email: '',
         protocolo_funcionamento: '',
-        passivo_alvara: '',
-        n_alvara: '',
+        passivo_alvara_sanitario: '',
+        n_alvara_sanitario: '',
         coleta_residuos: '',
-        recebeu_autuacao: '',
+        autuacao_visa: '',
         forma_abastecimento: '',
-        nome_responsavel: '',
-        cpf: '',
-        escolaridade: '',
-        formacao: '',
-        especializacao: '',
-        registro_conselho: ''
+        slug: '',
+        estabelecimento_Responsavel_Legal: responsaveisLegais,
+        estabelecimento_responsavel_tecnico: responsaveisTecnicos
     });
+
+    const [Estados, setEstados] = useState<any[]>([]);
+    const [Cidades, setCidades] = useState<any[]>([]);
+    const [Bairros, setBairros] = useState<any[]>([]);
+
+    //Add Responsável Legal
+    const handleAddResponsavelLegal = () => {
+
+        const novoResponsavelLegal = {
+            nome_responsavel: '',
+            cpf: '',
+            escolaridade: '',
+            email: ''
+        };
+
+        setResponsaveisLegais([...responsaveisLegais, novoResponsavelLegal]);
+
+        setFormData(prevState => ({
+            ...prevState,
+            Estabelecimento_Responsavel_Legal: [...responsaveisLegais, novoResponsavelLegal]
+        }));
+
+    }
+
+    //Delete Responsável Legal
+    const handleDeleteResponsavelLegal = (index: number) => {
+        const filteredResponsaveisLegais = responsaveisLegais.filter((item, i) => i !== index);
+        setResponsaveisLegais(filteredResponsaveisLegais);
+    }
+
+    //Add Responsável Técnico
+    const handleAddResponsavelTecnico = () => {
+
+        const novoResponsavelTecnico = {
+            nome_responsavel: '',
+            cpf: '',
+            escolaridade: '',
+            formacao: '',
+            especializacao: '',
+            registro_conselho: '',
+            email: ''
+        };
+
+        setResponsaveisTecnicos([...responsaveisTecnicos, novoResponsavelTecnico]);
+
+        setFormData(prevState => ({
+            ...prevState,
+            responsaveis_tecnicos: [...responsaveisTecnicos, novoResponsavelTecnico]
+        }));
+
+    }
+
+    //Delete Responsável Técnico
+    const handleDeleteResponsavelTecnico = (index: number) => {
+        const filteredResponsaveisTecnicos = responsaveisTecnicos.filter((item, i) => i !== index);
+        setResponsaveisTecnicos(filteredResponsaveisTecnicos);
+    }
+
+    //Verifica ID
+    const verificaId = () => {
+        const url = window.location.pathname;
+        const id = url.split('/').pop();
+
+
+        if (id !== 'form') {
+
+            setId(parseInt(id ? id : '0'));
+            //buscar os dados do estado
+            axios.get(`${server.url}${server.endpoints.estabelecimento}/${id}`).then(response => {
+
+                loadCidades(response.data.id_estado);
+                loadBairros(response.data.id_cidade);
+
+                try {
+                    setFormData(response.data);
+                    /* console.log("Dados:", response.data.estabelecimento_Responsavel_Legal);
+                    setResponsaveisLegais(response.data.estabelecimento_Responsavel_Legal.$values); */
+
+                } catch (error) {
+                    console.error("Erro:", error);
+                }
+
+            }).catch(error => {
+                console.error("Erro:", error);
+            });
+        } else {
+            setCidades([{ value: 0, label: 'Selecione o estado' }]);
+            setBairros([{ value: 0, label: 'Selecione a cidade' }]);
+        }
+    };
+
+    useEffect(() => {
+        verificaId();
+    }, []);
+
+    useEffect(() => {
+        console.log("FORMDATA atualizado:", formData);
+    }, [formData]);
+
+    //Carrega Estados
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+
+                const response = await axios.get(
+                    `${server.url}${server.endpoints.estado}`,
+                    {
+                        //parâmetros
+                    }
+                );
+
+                //ajustar array para que o campo value seja o id do estado e o campo label seja o nome do estado, e adiciona uma opção padrão com value 0 e label "Selecione"
+                response.data = response.data.$values.map((item: any) => {
+                    return { value: item.id, label: item.nome };
+                });
+
+                response.data.unshift({ value: 0, label: 'Selecione' });
+
+                setEstados(response.data);
+
+            } catch (error) {
+                console.error("Erro:", error);
+            }
+        };
+
+        fetchData();
+    }, []);
+
+    const loadCidades = async (id: number) => {
+
+        try {
+
+            const response = await axios.get(
+                `${server.url}${server.endpoints.cidade}/Estado/${id}`,
+                {
+                    //parâmetros
+                }
+            );
+
+            if (response.data.length === 0) {
+                setCidades([{ value: 0, label: 'Nenhuma cidade encontrada' }]);
+                return;
+            }
+
+            //ajustar array para que o campo value seja o id do estado e o campo label seja o nome do estado, e adiciona uma opção padrão com value 0 e label "Selecione"
+            response.data = response.data.$values.map((item: any) => {
+                return { value: item.id, label: item.nome };
+            });
+
+            response.data.unshift({ value: 0, label: 'Selecione' });
+
+            setCidades(response.data);
+
+        } catch (error) {
+
+            console.error("Erro:", error);
+        }
+    }
+
+    const loadBairros = async (id: number) => {
+
+        try {
+
+            const response = await axios.get(
+                `${server.url}${server.endpoints.bairro}/Cidade/${id}`,
+                {
+                    //parâmetros
+                }
+            );
+
+            if (response.data.length === 0) {
+                setCidades([{ value: 0, label: 'Nenhum bairro encontrado' }]);
+                return;
+            }
+
+            //ajustar array para que o campo value seja o id do estado e o campo label seja o nome do estado, e adiciona uma opção padrão com value 0 e label "Selecione"
+            response.data = response.data.$values.map((item: any) => {
+                return { value: item.id, label: item.nome };
+            });
+
+            response.data.unshift({ value: 0, label: 'Selecione' });
+
+            setBairros(response.data);
+
+        } catch (error) {
+
+            console.error("Erro:", error);
+        }
+    }
 
     //configura exibição do Alert
     const [alert, setAlert] = useState({
@@ -58,6 +269,16 @@ const FormularioEstabelecimentos: React.FC = () => {
             ...prevState,
             [name]: value
         }));
+
+        if (name === 'id_Estado') {
+            loadCidades(parseInt(value));
+            loadBairros(parseInt(value));
+        }
+
+        if (name === 'id_Cidade') {
+            loadBairros(parseInt(value));
+        }
+
     };
 
     const graus_risco = [
@@ -65,27 +286,6 @@ const FormularioEstabelecimentos: React.FC = () => {
         { value: "1", label: "Baixo" },
         { value: "2", label: "Médio" },
         { value: "3", label: "Alto" }
-    ];
-
-    const estados = [
-        { value: "0", label: "Selecione um estado" },
-        { value: "1", label: "São Paulo" },
-        { value: "2", label: "Rio de Janeiro" },
-        { value: "3", label: "Minas Gerais" }
-    ];
-
-    const cidades = [
-        { value: "0", label: "Selecione uma cidade" },
-        { value: "1", label: "São Paulo" },
-        { value: "2", label: "Rio de Janeiro" },
-        { value: "3", label: "Belo Horizonte" }
-    ];
-
-    const bairros = [
-        { value: "0", label: "Selecione uma bairro" },
-        { value: "1", label: "Bairro 1" },
-        { value: "2", label: "Bairro 2" },
-        { value: "3", label: "Bairro 3" }
     ];
 
     const alvara = [
@@ -140,13 +340,52 @@ const FormularioEstabelecimentos: React.FC = () => {
 
         if (tamanho !== 0 && tamanho !== null && value !== null && value.length !== tamanho) {
             erro = true;
-            mensagem_erro = `O campo deve ter ${tamanho} caracteres`;
+            mensagem_erro = `O campo ${nome_campo} deve ter ${tamanho} caracteres`;
         }
 
         return { erro, mensagem_erro };
     }
 
+    const handleChangeResponsavelLegal = (e: any, index: number) => {
+        const { name, value } = e.target;
+
+        const newValue = value;
+
+        setResponsaveisLegais(prevResponsaveisLegais => prevResponsaveisLegais.map((item, i) => {
+            if (i !== index) {
+                return item;
+            }
+            return {
+                ...item,
+                [name]: newValue
+            };
+        }));
+
+        setFormData(prevState => ({
+            ...prevState,
+            Estabelecimento_Responsavel_Legal: responsaveisLegais
+        }));
+
+    };
+
     function handleSubmit(e: any) {
+
+        //Alerta de Carregando
+        setAlert({
+            show: true,
+            success: true,
+            title: 'Carregando',
+            message: ['Carregando solicitação...'],
+            onConfirm: () => {
+                //recarregar a página
+                //window.location.reload();
+            },
+            onClose: () => {
+                //recarregar a página
+                //window.location.reload();
+            }
+        });
+
         e.preventDefault();
         console.log(formData);
 
@@ -161,24 +400,18 @@ const FormularioEstabelecimentos: React.FC = () => {
         const inscricao_estadual = validaCampos(formData.inscricao_estadual, 'Inscrição Estadual', true);
         const inscricao_municipal = validaCampos(formData.inscricao_municipal, 'Inscrição Municipal', true);
         const logradouro = validaCampos(formData.logradouro, 'Logradouro', true);
-        const estado = validaCampos(formData.estado, 'Estado', true);
-        const cidade = validaCampos(formData.cidade, 'Cidade', true);
-        const bairro = validaCampos(formData.bairro, 'Bairro', true);
+        const estado = validaCampos(formData.id_estado, 'Estado', true);
+        const cidade = validaCampos(formData.id_cidade, 'Cidade', true);
+        const bairro = validaCampos(formData.id_bairro, 'Bairro', true);
         const cep = validaCampos(formData.cep, 'CEP', true, 8);
         const telefone = validaCampos(formData.telefone, 'Telefone', true);
         const email = validaCampos(formData.email, 'E-mail', true);
         const protocolo_funcionamento = validaCampos(formData.protocolo_funcionamento, 'Protocolo de Funcionamento', true);
-        const passivo_alvara = validaCampos(formData.passivo_alvara, 'Passivo de Alvará Sanitário?', true);
-        const n_alvara = validaCampos(formData.n_alvara, 'N° do Alvará Sanitário ou Protocolo', true);
+        const passivo_alvara = validaCampos(formData.passivo_alvara_sanitario, 'Passivo de Alvará Sanitário?', true);
+        const n_alvara_sanitario = validaCampos(formData.n_alvara_sanitario, 'N° do Alvará Sanitário ou Protocolo', true);
         const coleta_residuos = validaCampos(formData.coleta_residuos, 'Coleta de Resíduos', true);
-        const recebeu_autuacao = validaCampos(formData.recebeu_autuacao, 'Recebeu Autuação da Vigilância Sanitária?', true);
+        const recebeu_autuacao = validaCampos(formData.autuacao_visa, 'Recebeu Autuação da Vigilância Sanitária?', true);
         const forma_abastecimento = validaCampos(formData.forma_abastecimento, 'Forma de Abastecimento', true);
-        const nome_responsavel = validaCampos(formData.nome_responsavel, 'Nome', true);
-        const cpf = validaCampos(formData.cpf, 'CPF', true, 11);
-        const escolaridade = validaCampos(formData.escolaridade, 'Escolaridade', true);
-        const formacao = validaCampos(formData.formacao, 'Formação', true);
-        const especializacao = validaCampos(formData.especializacao, 'Especialização', true);
-        const registro_conselho = validaCampos(formData.registro_conselho, 'Registro no Conselho', true);
 
         if (razao_social.erro) mensagem_erro.push(razao_social.mensagem_erro);
         if (nome_fantasia.erro) mensagem_erro.push(nome_fantasia.mensagem_erro);
@@ -197,16 +430,10 @@ const FormularioEstabelecimentos: React.FC = () => {
         if (email.erro) mensagem_erro.push(email.mensagem_erro);
         if (protocolo_funcionamento.erro) mensagem_erro.push(protocolo_funcionamento.mensagem_erro);
         if (passivo_alvara.erro) mensagem_erro.push(passivo_alvara.mensagem_erro);
-        if (n_alvara.erro) mensagem_erro.push(n_alvara.mensagem_erro);
+        if (n_alvara_sanitario.erro) mensagem_erro.push(n_alvara_sanitario.mensagem_erro);
         if (coleta_residuos.erro) mensagem_erro.push(coleta_residuos.mensagem_erro);
         if (recebeu_autuacao.erro) mensagem_erro.push(recebeu_autuacao.mensagem_erro);
         if (forma_abastecimento.erro) mensagem_erro.push(forma_abastecimento.mensagem_erro);
-        if (nome_responsavel.erro) mensagem_erro.push(nome_responsavel.mensagem_erro);
-        if (cpf.erro) mensagem_erro.push(cpf.mensagem_erro);
-        if (escolaridade.erro) mensagem_erro.push(escolaridade.mensagem_erro);
-        if (formacao.erro) mensagem_erro.push(formacao.mensagem_erro);
-        if (especializacao.erro) mensagem_erro.push(especializacao.mensagem_erro);
-        if (registro_conselho.erro) mensagem_erro.push(registro_conselho.mensagem_erro);
 
 
         if (mensagem_erro.length > 0) {
@@ -226,20 +453,81 @@ const FormularioEstabelecimentos: React.FC = () => {
 
             return;
         } else {
-            setAlert({
-                show: true,
-                success: true,
-                title: 'Sucesso',
-                message: ['Estabelecimento cadastrado com sucesso'],
-                onConfirm: () => {
-                    //recarregar a página
-                    window.location.reload();
-                },
-                onClose: () => {
-                    //recarregar a página
-                    window.location.reload();
-                }
-            });
+            var slug = formData.razao_social.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
+            formData.slug = slug;
+
+            console.log('FORMDATA', formData);
+
+            if (Id === 0) {
+                axios.post(`${server.url}${server.endpoints.estabelecimento}`, formData).then(response => {
+
+                    setAlert({
+                        show: true,
+                        success: true,
+                        title: 'Sucesso',
+                        message: ['Estabelecimento cadastrado com sucesso'],
+                        onConfirm: () => {
+                            //recarregar a página
+                            window.location.reload();
+                        },
+                        onClose: () => {
+                            //recarregar a página
+                            window.location.reload();
+                        }
+                    });
+                }).catch(error => {
+                    console.error("Erro:", error);
+
+                    setAlert({
+                        show: true,
+                        success: false,
+                        title: 'Erro',
+                        message: ['Erro ao cadastrar Estabelecimento'],
+                        onConfirm: () => {
+                            setAlert({ ...alert, show: false });
+                        },
+                        onClose: () => {
+                            setAlert({ ...alert, show: false });
+                        }
+                    });
+
+                });
+            } else {
+                axios.put(`${server.url}${server.endpoints.estabelecimento}/${Id}`, formData).then(response => {
+                    console.log("Dados:", response.data);
+
+                    setAlert({
+                        show: true,
+                        success: true,
+                        title: 'Sucesso',
+                        message: ['Estabelecimento atualizado com sucesso'],
+                        onConfirm: () => {
+                            //recarregar a página
+                            window.location.reload();
+                        },
+                        onClose: () => {
+                            //recarregar a página
+                            window.location.reload();
+                        }
+                    });
+                }).catch(error => {
+                    console.error("Erro:", error);
+
+                    setAlert({
+                        show: true,
+                        success: false,
+                        title: 'Erro',
+                        message: ['Erro ao atualizar Estabelecimento'],
+                        onConfirm: () => {
+                            setAlert({ ...alert, show: false });
+                        },
+                        onClose: () => {
+                            setAlert({ ...alert, show: false });
+                        }
+                    });
+
+                });
+            }
         }
     }
 
@@ -252,93 +540,126 @@ const FormularioEstabelecimentos: React.FC = () => {
 
             <ContainerForm title="Informações Básicas">
                 <Row>
-                    <CampoTexto label="Razão Social" name="razao_social" tipo="text" className="col-md-6" onChange={handleChange} />
-                    <CampoTexto label="Nome Fantasia" name="nome_fantasia" tipo="text" className="col-md-6" onChange={handleChange} />
+                    <CampoTexto label="Razão Social" value={formData.razao_social} name="razao_social" tipo="text" className="col-md-6" onChange={handleChange} />
+                    <CampoTexto label="Nome Fantasia" value={formData.nome_fantasia} name="nome_fantasia" tipo="text" className="col-md-6" onChange={handleChange} />
                     {/* <CampoSelect label="Cidade" name="cidade" options={cidades} className="col-md-4" onChange={handleChange} /> */}
                 </Row>
                 <Row>
-                    <CampoTexto label="CNPJ" name="cnpj" tipo="text" className="col-md-3" onChange={handleChange} />
-                    <CampoTexto label="CNAE" name="cnae" tipo="text" className="col-md-3" onChange={handleChange} />
-                    <CampoTexto label="Data Início Funcionamento" name="data_inicio_funcionamento" tipo="text" className="col-md-3" onChange={handleChange} />
-                    <CampoSelect label="Grau de Risco" name="grau_risco" options={graus_risco} className="col-md-3" onChange={handleChange} />
+                    <CampoTexto label="CNPJ" value={formData.cnpj} name="cnpj" tipo="text" className="col-md-3" onChange={handleChange} />
+                    <CampoTexto label="CNAE" value={formData.cnae} name="cnae" tipo="text" className="col-md-3" onChange={handleChange} />
+                    <CampoTexto label="Início Funcionamento" value={formData.data_inicio_funcionamento ? new Date(formData.data_inicio_funcionamento).toISOString().split('T')[0] : ''} name="data_inicio_funcionamento" tipo="date" className="col-md-3" onChange={handleChange} />
+                    <CampoSelect label="Grau de Risco" value={formData.grau_risco} name="grau_risco" options={graus_risco} className="col-md-3" onChange={handleChange} />
                 </Row>
                 <Row>
-                    <CampoTexto label="Inscrição Estadual" name="inscricao_estadual" tipo="text" className="col-md-6" onChange={handleChange} />
-                    <CampoTexto label="Inscrição Municipal" name="inscricao_municipal" tipo="text" className="col-md-6" onChange={handleChange} />
+                    <CampoTexto label="Inscrição Estadual" name="inscricao_estadual" value={formData.inscricao_estadual} tipo="text" className="col-md-6" onChange={handleChange} />
+                    <CampoTexto label="Inscrição Municipal" name="inscricao_municipal" value={formData.inscricao_municipal} tipo="text" className="col-md-6" onChange={handleChange} />
                 </Row>
-
             </ContainerForm>
 
             <ContainerForm title="Endereço / Contato">
                 <Row>
-                    <CampoTexto label="Logradouro" name="logradouro" tipo="text" className="col-md-6" onChange={handleChange} />
-                    <CampoSelect label="Estado" name="estado" options={estados} className="col-md-3" onChange={handleChange} />
-                    <CampoSelect label="Cidade" name="cidade" options={cidades} className="col-md-3" onChange={handleChange} />
+                    <CampoTexto label="Logradouro" name="logradouro" value={formData.logradouro} tipo="text" className="col-md-6" onChange={handleChange} />
+                    <CampoSelect label="Estado" name="id_Estado" value={formData.id_estado} options={Estados} className="col-md-3" onChange={handleChange} />
+                    <CampoSelect label="Cidade" name="id_Cidade" value={formData.id_cidade} options={Cidades} className="col-md-3" onChange={handleChange} />
                 </Row>
                 <Row>
-                    <CampoSelect label="Bairro" name="bairro" options={bairros} className="col-md-3" onChange={handleChange} />
-                    <CampoTexto label="CEP" name="cep" tipo="text" className="col-md-3" onChange={handleChange} />
-                    <CampoTexto label="Complemento" name="complemento" tipo="text" className="col-md-3" onChange={handleChange} />
+                    <CampoSelect label="Bairro" name="id_Bairro" value={formData.id_bairro} options={Bairros} className="col-md-3" onChange={handleChange} />
+                    <CampoTexto label="CEP" name="cep" value={formData.cep} tipo="text" className="col-md-3" onChange={handleChange} />
+                    <CampoTexto label="Complemento" name="complemento" value={formData.complemento} tipo="text" className="col-md-3" onChange={handleChange} />
                 </Row>
                 <Row>
-                    <CampoTexto label="Telefone" name="telefone" tipo="text" className="col-md-3" onChange={handleChange} />
-                    <CampoTexto label="E-mail" name="email" tipo="text" className="col-md-3" onChange={handleChange} />
+                    <CampoTexto label="Telefone" name="telefone" value={formData.telefone} tipo="text" className="col-md-3" onChange={handleChange} />
+                    <CampoTexto label="E-mail" name="email" value={formData.email} tipo="text" className="col-md-3" onChange={handleChange} />
                 </Row>
             </ContainerForm>
 
             <ContainerForm title="Vigilância">
                 <Row>
-                    <CampoTexto label="Protocolo de Funcionamento" name="protocolo_funcionamento" tipo="text" className="col-md-4" onChange={handleChange} />
-                    <CampoSelect label="Passivo de Alvará Sanitário?" name="passivo_alvara" options={alvara} className="col-md-4" onChange={handleChange} />
-                    <CampoTexto label="N° do Alvará Sanitário ou Protocolo" name="n_alvara" tipo="text" className="col-md-4" onChange={handleChange} />
+                    <CampoTexto label="Protocolo de Funcionamento" name="protocolo_funcionamento" value={formData.protocolo_funcionamento} tipo="text" className="col-md-4" onChange={handleChange} />
+                    <CampoSelect label="Passivo de Alvará Sanitário?" name="passivo_alvara_sanitario" value={formData.passivo_alvara_sanitario} options={alvara} className="col-md-4" onChange={handleChange} />
+                    <CampoTexto label="N° do Alvará Sanitário ou Protocolo" name="n_alvara_sanitario" value={formData.n_alvara_sanitario} tipo="text" className="col-md-4" onChange={handleChange} />
                 </Row>
 
                 <Row>
-                    <CampoSelect label="Coleta de Resíduos" name="coleta_residuos" options={coleta_residuos} className="col-md-4" onChange={handleChange} />
-                    <CampoSelect label="Recebeu Autuação da Vigilância Sanitária?" name="recebeu_autuacao" options={recebeu_autuacao} className="col-md-4" onChange={handleChange} />
-                    <CampoSelect label="Forma de Abastecimento" name="forma_abastecimento" options={forma_abastecimento} className="col-md-4" onChange={handleChange} />
+                    <CampoSelect label="Coleta de Resíduos" name="coleta_residuos" value={formData.coleta_residuos} options={coleta_residuos} className="col-md-4" onChange={handleChange} />
+                    <CampoSelect label="Recebeu Autuação da Vigilância Sanitária?" name="autuacao_visa" value={formData.autuacao_visa} options={recebeu_autuacao} className="col-md-4" onChange={handleChange} />
+                    <CampoSelect label="Forma de Abastecimento" name="forma_abastecimento" value={formData.forma_abastecimento} options={forma_abastecimento} className="col-md-4" onChange={handleChange} />
                 </Row>
             </ContainerForm>
 
-            <ContainerForm title="Responsáveis Legais">
-                <Row>
-                    <CampoTexto label="Nome" name="nome_responsavel" tipo="text" className="col-md-6" onChange={handleChange} />
-                    <CampoTexto label="CPF" name="cpf" tipo="text" className="col-md-3" onChange={handleChange} />
-                    <CampoSelect label="Escolaridade" name="escolaridade" options={escolaridade} className="col-md-3" onChange={handleChange} />
-                </Row>
+            {!(Id > 0) && (
+                <>
+                    <ContainerForm title="Responsáveis Legais">
+                        {responsaveisLegais.map((responsavelLegal, index) => (
 
-                <Row className="justify-content-end">
-                    <BotaoSubmit texto="Adicionar Novo" onClick={(e) => {
-                        e.preventDefault();
-                        handleSubmit(e);
-                    }}
-                    />
-                </Row>
-            </ContainerForm>
+                            <div key={index} style={{ border: 'dashed 1px #ccc', padding: '15px', marginTop: '10px', backgroundColor: '#fbbc0517', borderRadius: '7px' }}>
+                                <Row>
+                                    <CampoTexto label="CPF" value={responsavelLegal.cpf} name="cpf" tipo="text" className="col-md-3" onChange={(e) => handleChangeResponsavelLegal(e, index)} />
+                                    <CampoTexto label="Nome" value={responsavelLegal.nome_responsavel} name="nome_responsavel" tipo="text" className="col-md-6" onChange={(e) => handleChangeResponsavelLegal(e, index)} />
+                                    <CampoSelect label="Escolaridade" value={responsavelLegal.escolaridade} name="escolaridade" options={escolaridade} className="col-md-3" onChange={(e) => handleChangeResponsavelLegal(e, index)} />
+                                </Row>
+                                <Row>
+                                    <CampoTexto label="Email" name="email" value={responsavelLegal.email} tipo="email" className="col-md-3" onChange={(e) => handleChangeResponsavelLegal(e, index)} />
+                                </Row>
 
-            <ContainerForm title="Responsáveis Técnicos">
-                <Row>
-                    <CampoTexto label="Nome" name="nome_responsavel" tipo="text" className="col-md-6" onChange={handleChange} />
-                    <CampoTexto label="CPF" name="cpf" tipo="text" className="col-md-3" onChange={handleChange} />
-                    <CampoSelect label="Escolaridade" name="escolaridade" options={escolaridade} className="col-md-3" onChange={handleChange} />
-                </Row>
+                                <div className="d-flex justify-content-end">
+                                    <BotaoExcluir texto="Excluir" onClick={() => {
+                                        handleDeleteResponsavelLegal(index);
+                                    }} />
+                                </div>
+                            </div>
 
-                <Row>
-                    <CampoTexto label="Formação" name="formacao" tipo="text" className="col-md-3" onChange={handleChange} />
-                    <CampoTexto label="Especialização" name="especializacao" tipo="text" className="col-md-3" onChange={handleChange} />
-                    <CampoTexto label="Registro no Conselho" name="registro_conselho" tipo="text" className="col-md-3" onChange={handleChange} />
-                </Row>
+                        ))}
 
-                <Row className="justify-content-end">
-                    <BotaoSubmit texto="Adicionar Novo" onClick={(e) => {
-                        e.preventDefault();
-                        handleSubmit(e);
-                    }}
-                    />
-                </Row>
-            </ContainerForm>
+                        <Row className="justify-content-end">
+                            <BotaoSubmit texto="Adicionar Novo" onClick={(e) => {
+                                e.preventDefault();
+                                handleAddResponsavelLegal();
+                            }}
+                            />
+                        </Row>
+                    </ContainerForm>
 
-            <ContainerForm title="Salvar Dados">
+
+
+                    <ContainerForm title="Responsáveis Técnicos">
+                        {responsaveisTecnicos.map((responsavelTecnico, index) => (
+
+                            <div key={index} style={{ border: 'dashed 1px #ccc', padding: '15px', marginTop: '10px', backgroundColor: '#fbbc0517', borderRadius: '7px' }}>
+                                <Row>
+                                    <CampoTexto label="CPF" value={responsavelTecnico.cpf} name="cpf" tipo="text" className="col-md-3" onChange={handleChange} />
+                                    <CampoTexto label="Nome" value={responsavelTecnico.nome_responsavel} name="nome_responsavel" tipo="text" className="col-md-6" onChange={handleChange} />
+                                    <CampoSelect label="Escolaridade" name="escolaridade" options={escolaridade} className="col-md-3" onChange={handleChange} />
+                                </Row>
+
+                                <Row>
+                                    <CampoTexto label="Formação" value={responsavelTecnico.formacao} name="formacao" tipo="text" className="col-md-3" onChange={handleChange} />
+                                    <CampoTexto label="Especialização" value={responsavelTecnico.especializacao} name="especializacao" tipo="text" className="col-md-3" onChange={handleChange} />
+                                    <CampoTexto label="Registro no Conselho" value={responsavelTecnico.registro_conselho} name="registro_conselho" tipo="text" className="col-md-3" onChange={handleChange} />
+                                </Row>
+                                <Row>
+                                    <CampoTexto label="Email" name="email_responsavel" value={responsavelTecnico.email} tipo="email" className="col-md-3" onChange={(e) => handleChangeResponsavelLegal(e, index)} />
+                                </Row>
+                                <div className="d-flex justify-content-end">
+                                    <BotaoExcluir texto="Excluir" onClick={() => {
+                                        handleDeleteResponsavelTecnico(index);
+                                    }} />
+                                </div>
+                            </div>
+
+                        ))}
+
+                        <Row className="justify-content-end">
+                            <BotaoSubmit texto="Adicionar Novo" onClick={(e) => {
+                                e.preventDefault();
+                                handleAddResponsavelTecnico();
+                            }}
+                            />
+                        </Row>
+                    </ContainerForm>
+                </>
+            )}
+            <ContainerForm>
                 <Row className="justify-content-end">
                     <BotaoSubmit texto="Salvar" onClick={(e) => {
                         e.preventDefault();

@@ -1,51 +1,161 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Layout from "../../structure/Layout";
 import Filtro from "../../other/filtro";
 import Resultado from "../../other/resultado";
 import Breadcrumb from "../../other/breadCrumb";
 import Titulo from "../../other/tituloPage";
 import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import { useAuth } from "../../../context/AuthContext";
+import server from "../../../utils/data/server";
+import axios from "axios";
+import Alert from "../../other/modal/alert";
+import Confirm from "../../other/modal/confirm";
+
+const ITEMS_PER_PAGE = 20;
 
 const Estabelecimentos: React.FC = () => {
 
-    var exemploDados = [
-        {
-            id: 1,
-            nome: "Bairro 1",
-            cidade: "Cidade 1",
-            regional: "Regional 1",
-            populacao: 1000,
-            area: 100,
-            densidade: 10,
-            renda: 1000,
-            escolaridade: 10,
-            idh: 0.5
-        },
-        {
-            id: 2,
-            nome: "Bairro 2",
-            cidade: "Cidade 2",
-            regional: "Regional 2",
-            populacao: 2000,
-            area: 200,
-            densidade: 20,
-            renda: 2000,
-            escolaridade: 20,
-            idh: 0.6
-        },
-        {
-            id: 3,
-            nome: "Bairro 3",
-            cidade: "Cidade 3",
-            regional: "Regional 3",
-            populacao: 3000,
-            area: 300,
-            densidade: 30,
-            renda: 3000,
-            escolaridade: 30,
-            idh: 0.7
-        }
-    ];
+    const { user } = useAuth();
+    const [dados, setDados] = useState<any[]>([]);
+    const [total, setTotal] = useState<number>(0);
+    const [page, setPage] = useState<number>(1);
+    const [filtroBusca, setFiltroBusca] = useState<string>(''); // Input field state
+    const [searchTerm, setSearchTerm] = useState<string>(''); // Termo de busca efetivo
+
+    const user_type = user?.role ? user?.role : '0';
+
+    const [alert, setAlert] = useState({
+        show: false,
+        success: false,
+        title: '',
+        message: [''],
+        onConfirm: () => { },
+        onClose: () => { }
+    });
+
+    const [confirm, setConfirm] = useState({
+        show: false,
+        success: false,
+        title: '',
+        message: [''],
+        onConfirm: () => { },
+        onClose: () => { }
+    });
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const response = await axios.get(
+                    `${server.url}${server.endpoints.estabelecimento}`,
+                    {
+                        params: {
+                            filtro_busca: searchTerm,
+                            page: page,
+                            perPage: ITEMS_PER_PAGE
+                        }
+                    }
+                );
+
+                setDados(response.data.dados.$values);
+                setTotal(response.data.total);
+            } catch (error) {
+                console.error("Erro:", error);
+            }
+        };
+
+        fetchData();
+    }, [page, searchTerm]);
+
+    const totalPages = Math.ceil(total / ITEMS_PER_PAGE);
+
+    const handleExcluir = async (id: number) => {
+        setConfirm({
+            show: true,
+            success: false,
+            title: 'Excluir Estabelecimento',
+            message: ['Deseja realmente excluir este estabelecimento?'],
+            onConfirm: async () => {
+                try {
+                    await axios.delete(
+                        `${server.url}${server.endpoints.estabelecimento}/${id}`
+                    );
+
+                    setDados(dados.filter(dado => dado.id !== id));
+
+                    setAlert({
+                        show: true,
+                        success: true,
+                        title: 'Sucesso',
+                        message: ['Estabelecimento excluído com sucesso!'],
+                        onConfirm: () => {
+                            setAlert({
+                                show: false,
+                                success: false,
+                                title: '',
+                                message: [''],
+                                onConfirm: () => { },
+                                onClose: () => { }
+                            });
+                        },
+                        onClose: () => {
+                            setAlert({
+                                show: false,
+                                success: false,
+                                title: '',
+                                message: [''],
+                                onConfirm: () => { },
+                                onClose: () => { }
+                            });
+                        }
+                    });
+                } catch (error) {
+                    console.error("Erro:", error);
+                    setAlert({
+                        show: true,
+                        success: false,
+                        title: 'Erro',
+                        message: ['Erro ao excluir o estabelecimento!'],
+                        onConfirm: () => {
+                            setAlert({
+                                show: false,
+                                success: false,
+                                title: '',
+                                message: [''],
+                                onConfirm: () => { },
+                                onClose: () => { }
+                            });
+                        },
+                        onClose: () => {
+                            setAlert({
+                                show: false,
+                                success: false,
+                                title: '',
+                                message: [''],
+                                onConfirm: () => { },
+                                onClose: () => { }
+                            });
+                        }
+                    });
+                }
+            },
+            onClose: () => {
+                setConfirm({
+                    show: false,
+                    success: false,
+                    title: '',
+                    message: [''],
+                    onConfirm: () => { },
+                    onClose: () => { }
+                });
+            }
+        });
+    };
+
+    const handleSearch = () => {
+        setSearchTerm(filtroBusca);
+        setPage(1); // Resetar para a primeira página ao buscar
+    };
 
     return (
         <Layout>
@@ -59,42 +169,94 @@ const Estabelecimentos: React.FC = () => {
             </Filtro>
 
             <Resultado title="Resultado">
-                <table className="table table-striped">
+                <table className="table table-striped table-bordered">
                     <thead>
                         <tr>
                             <th>{"ID"}</th>
                             <th>{"Nome"}</th>
-                            <th>{"Cidade"}</th>
-                            <th>{"Regional"}</th>
-                            <th>{"População"}</th>
-                            <th>{"Área"}</th>
-                            <th>{"Densidade"}</th>
-                            <th>{"Renda"}</th>
-                            <th>{"Escolaridade"}</th>
+                            <th>{"Telefone"}</th>
+                            <th>{"Email"}</th>
                             <th>{"Opções"}</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {exemploDados.map((dado) => (
+                        {dados.map((dado) => (
                             <tr key={dado.id}>
                                 <td>{dado.id}</td>
-                                <td>{dado.nome}</td>
-                                <td>{dado.cidade}</td>
-                                <td>{dado.regional}</td>
-                                <td>{dado.populacao}</td>
-                                <td>{dado.area}</td>
-                                <td>{dado.densidade}</td>
-                                <td>{dado.renda}</td>
-                                <td>{dado.escolaridade}</td>
                                 <td>
-                                    <button className="btn btn-sm btn-warning me-1">{"Editar"}</button>
-                                    <button className="btn btn-sm btn-danger">{"Excluir"}</button>
+                                    {dado.nome_fantasia}<br />
+                                    <small>{dado.razao_social}</small>
+                                </td>
+                                <td>{dado.telefone}</td>
+                                <td>{dado.email}</td>
+                                <td>
+                                    {['1', '2', '8'].includes(user_type) && (
+                                        <div className="dropdown">
+                                            <button
+                                                className="btn btn-secondary btn-sm dropdown-toggle"
+                                                type="button"
+                                                id={`dropdownMenuButton${dado.id}`}
+                                                data-bs-toggle="dropdown"
+                                                aria-expanded="false"
+                                            >
+                                                Ações
+                                            </button>
+                                            <ul className="dropdown-menu" aria-labelledby={`dropdownMenuButton${dado.id}`}>
+                                                <li>
+                                                    <a href={`/estabelecimentos/form/${dado.id}`} className="dropdown-item">Editar</a>
+                                                </li>
+                                                <li>
+                                                    <button className="dropdown-item">Responsáveis Legais</button>
+                                                </li>
+                                                <li>
+                                                    <button className="dropdown-item">Responsáveis Técnicos</button>
+                                                </li>
+                                                <li>
+                                                    <button className="dropdown-item" onClick={() => handleExcluir(dado.id)}>Excluir</button>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    )}
                                 </td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
+
+                <div className="d-flex justify-content-center">
+                    <ul className="pagination">
+                        <li className={`page-item ${page === 1 ? 'disabled' : ''}`}>
+                            <a className="page-link" href="#" onClick={() => setPage(page - 1)} tabIndex={-1} aria-disabled={page === 1}>{"Anterior"}</a>
+                        </li>
+                        {[...Array(totalPages)].map((_, index) => (
+                            <li key={index} className={`page-item ${page === index + 1 ? 'active' : ''}`}>
+                                <a className="page-link" href="#" onClick={() => setPage(index + 1)}>{index + 1}</a>
+                            </li>
+                        ))}
+                        <li className={`page-item ${page === totalPages ? 'disabled' : ''}`}>
+                            <a className="page-link" href="#" onClick={() => setPage(page + 1)} tabIndex={-1} aria-disabled={page === totalPages}>{"Próximo"}</a>
+                        </li>
+                    </ul>
+                </div>
             </Resultado>
+
+            <Alert
+                title={alert.title}
+                message={alert.message}
+                success={alert.success}
+                show={alert.show}
+                onConfirm={alert.onConfirm}
+                onClose={alert.onClose}
+            />
+
+            <Confirm
+                title={confirm.title}
+                message={confirm.message}
+                success={confirm.success}
+                show={confirm.show}
+                onConfirm={confirm.onConfirm}
+                onClose={confirm.onClose}
+            />
 
         </Layout>
     );

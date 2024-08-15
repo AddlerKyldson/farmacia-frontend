@@ -123,12 +123,12 @@ const Menu: React.FC = () => {
                 {permissoesJson.permissao_bolsa_familia && (
                     <>
                         <MenuItem onClick={toggleBolsaFamiliaSubMenu}>
-                            <MenuLink>{"SINAN"}</MenuLink>
+                            <MenuLink>{"Bolsa Família"}</MenuLink>
                         </MenuItem>
                         {isBolsaFamiliaSubMenuVisible && (
                             <SubMenu>
                                 <SubMenuItem>
-                                    <MenuLink href="/notificacoes-negativas">{"Notificações Negativas"}</MenuLink>
+                                    <MenuLink href="/bolsa-familia">{"Bolsa Família"}</MenuLink>
                                 </SubMenuItem>
                             </SubMenu>
                         )}

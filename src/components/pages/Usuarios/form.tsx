@@ -442,7 +442,8 @@ const FormUsuarios: React.FC = () => {
                         { value: '5', label: 'Atendente' },
                         { value: '6', label: 'Farmacêutico' },
                         { value: '7', label: 'Vigilante Sanitário' },
-                        { value: '8', label: 'Digitador' }
+                        { value: '8', label: 'Digitador' },
+                        { value: '9', label: 'Cidadão' }
                     ]} className="col-md-4" onChange={handleChange} />
                 </Row>
 

@@ -50,6 +50,7 @@ const App: React.FC = () => {
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/estabelecimentos" element={<PrivateRoute><Estabelecimentos /></PrivateRoute>} />
                     <Route path="/estabelecimentos/form" element={<PrivateRoute><FormularioEstabelecimentos /></PrivateRoute>} />
+                    <Route path="/estabelecimentos/form/:id" element={<PrivateRoute><FormularioEstabelecimentos /></PrivateRoute>} />
                     <Route path="/bairros" element={<PrivateRoute><Bairros /></PrivateRoute>} />
                     <Route path="/bairros/form" element={<PrivateRoute><FormBairros /></PrivateRoute>} />
                     <Route path="/bairros/form/:id" element={<PrivateRoute><FormBairros /></PrivateRoute>} />

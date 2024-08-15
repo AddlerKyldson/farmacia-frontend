@@ -153,7 +153,7 @@ const Usuarios: React.FC = () => {
             </Filtro>
 
             <Resultado title="Resultado">
-                <table className="table">
+                <table className="table table-striped table-bordered">
                     <thead>
                         <tr>
                             <th>{"ID"}</th>

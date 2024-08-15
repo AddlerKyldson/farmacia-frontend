@@ -167,8 +167,6 @@ const FormUnidadeSaude: React.FC = () => {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
 
-        console.log(name, value)
-
         setFormData(prevState => ({
             ...prevState,
             [name]: value
@@ -176,6 +174,7 @@ const FormUnidadeSaude: React.FC = () => {
 
         if (name === 'id_Estado') {
             loadCidades(parseInt(value));
+            loadBairros(parseInt(value));
         }
 
         if (name === 'id_Cidade') {
