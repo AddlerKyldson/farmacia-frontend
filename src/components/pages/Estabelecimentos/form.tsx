@@ -45,9 +45,9 @@ const FormularioEstabelecimentos: React.FC = () => {
         inscricao_estadual: '',
         inscricao_municipal: '',
         logradouro: '',
-        id_estado: '',
-        id_cidade: '',
-        id_bairro: '',
+        id_Estado: '',
+        id_Cidade: '',
+        id_Bairro: '',
         cep: '',
         complemento: '',
         telefone: '',
@@ -58,6 +58,7 @@ const FormularioEstabelecimentos: React.FC = () => {
         coleta_residuos: '',
         autuacao_visa: '',
         forma_abastecimento: '',
+        id_tipo_estabelecimento: '',
         slug: '',
         estabelecimento_Responsavel_Legal: responsaveisLegais,
         estabelecimento_responsavel_tecnico: responsaveisTecnicos
@@ -66,6 +67,7 @@ const FormularioEstabelecimentos: React.FC = () => {
     const [Estados, setEstados] = useState<any[]>([]);
     const [Cidades, setCidades] = useState<any[]>([]);
     const [Bairros, setBairros] = useState<any[]>([]);
+    const [TipoEstabelecimento, setTipoEstabelecimento] = useState<any[]>([]);
 
     //Add Responsável Legal
     const handleAddResponsavelLegal = () => {
@@ -90,6 +92,11 @@ const FormularioEstabelecimentos: React.FC = () => {
     const handleDeleteResponsavelLegal = (index: number) => {
         const filteredResponsaveisLegais = responsaveisLegais.filter((item, i) => i !== index);
         setResponsaveisLegais(filteredResponsaveisLegais);
+
+        setFormData(prevState => ({
+            ...prevState,
+            Estabelecimento_Responsavel_Legal: filteredResponsaveisLegais
+        }));
     }
 
     //Add Responsável Técnico
@@ -252,6 +259,35 @@ const FormularioEstabelecimentos: React.FC = () => {
         }
     }
 
+    //Carrega Tipos de estabelecimentos
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+
+                const response = await axios.get(
+                    `${server.url}${server.endpoints.tipo_estabelecimento}`,
+                    {
+                        //parâmetros
+                    }
+                );
+
+                //ajustar array para que o campo value seja o id do estado e o campo label seja o nome do estado, e adiciona uma opção padrão com value 0 e label "Selecione"
+                response.data = response.data.dados.$values.map((item: any) => {
+                    return { value: item.id, label: item.nome };
+                });
+
+                response.data.unshift({ value: 0, label: 'Selecione' });
+
+                setTipoEstabelecimento(response.data);
+
+            } catch (error) {
+                console.error("Erro:", error);
+            }
+        };
+
+        fetchData();
+    }, []);
+
     //configura exibição do Alert
     const [alert, setAlert] = useState({
         show: false,
@@ -400,9 +436,9 @@ const FormularioEstabelecimentos: React.FC = () => {
         const inscricao_estadual = validaCampos(formData.inscricao_estadual, 'Inscrição Estadual', true);
         const inscricao_municipal = validaCampos(formData.inscricao_municipal, 'Inscrição Municipal', true);
         const logradouro = validaCampos(formData.logradouro, 'Logradouro', true);
-        const estado = validaCampos(formData.id_estado, 'Estado', true);
-        const cidade = validaCampos(formData.id_cidade, 'Cidade', true);
-        const bairro = validaCampos(formData.id_bairro, 'Bairro', true);
+        const estado = validaCampos(formData.id_Estado, 'Estado', true);
+        const cidade = validaCampos(formData.id_Cidade, 'Cidade', true);
+        const bairro = validaCampos(formData.id_Bairro, 'Bairro', true);
         const cep = validaCampos(formData.cep, 'CEP', true, 8);
         const telefone = validaCampos(formData.telefone, 'Telefone', true);
         const email = validaCampos(formData.email, 'E-mail', true);
@@ -559,11 +595,11 @@ const FormularioEstabelecimentos: React.FC = () => {
             <ContainerForm title="Endereço / Contato">
                 <Row>
                     <CampoTexto label="Logradouro" name="logradouro" value={formData.logradouro} tipo="text" className="col-md-6" onChange={handleChange} />
-                    <CampoSelect label="Estado" name="id_Estado" value={formData.id_estado} options={Estados} className="col-md-3" onChange={handleChange} />
-                    <CampoSelect label="Cidade" name="id_Cidade" value={formData.id_cidade} options={Cidades} className="col-md-3" onChange={handleChange} />
+                    <CampoSelect label="Estado" name="id_Estado" value={formData.id_Estado} options={Estados} className="col-md-3" onChange={handleChange} />
+                    <CampoSelect label="Cidade" name="id_Cidade" value={formData.id_Cidade} options={Cidades} className="col-md-3" onChange={handleChange} />
                 </Row>
                 <Row>
-                    <CampoSelect label="Bairro" name="id_Bairro" value={formData.id_bairro} options={Bairros} className="col-md-3" onChange={handleChange} />
+                    <CampoSelect label="Bairro" name="id_Bairro" value={formData.id_Bairro} options={Bairros} className="col-md-3" onChange={handleChange} />
                     <CampoTexto label="CEP" name="cep" value={formData.cep} tipo="text" className="col-md-3" onChange={handleChange} />
                     <CampoTexto label="Complemento" name="complemento" value={formData.complemento} tipo="text" className="col-md-3" onChange={handleChange} />
                 </Row>
@@ -584,6 +620,9 @@ const FormularioEstabelecimentos: React.FC = () => {
                     <CampoSelect label="Coleta de Resíduos" name="coleta_residuos" value={formData.coleta_residuos} options={coleta_residuos} className="col-md-4" onChange={handleChange} />
                     <CampoSelect label="Recebeu Autuação da Vigilância Sanitária?" name="autuacao_visa" value={formData.autuacao_visa} options={recebeu_autuacao} className="col-md-4" onChange={handleChange} />
                     <CampoSelect label="Forma de Abastecimento" name="forma_abastecimento" value={formData.forma_abastecimento} options={forma_abastecimento} className="col-md-4" onChange={handleChange} />
+                </Row>
+                <Row>
+                    <CampoSelect label="Tipo de Estabelecimento" name="id_tipo_estabelecimento" value={formData.id_tipo_estabelecimento} options={TipoEstabelecimento} className="col-md-4" onChange={handleChange} />
                 </Row>
             </ContainerForm>
 

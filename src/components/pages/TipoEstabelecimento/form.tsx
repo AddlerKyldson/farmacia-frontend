@@ -1,26 +1,25 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Layout from "../../structure/Layout";
 import Breadcrumb from "../../other/breadCrumb";
 import Titulo from "../../other/tituloPage";
 import ContainerForm from "../../other/form/containerForm";
 import CampoTexto from "../../other/form/campoTexto";
+import CampoSelect from "../../other/form/campoSelect";
 import BotaoSubmit from "../../other/form/botaoSubmit";
 import Row from "../../other/grid/row";
 import Alert from "../../other/modal/alert";
-import CampoSelect from "../../other/form/campoSelect";
+import server from "../../../utils/data/server";
+import axios from "axios";
 
 const FormTipoEstabelecimento: React.FC = () => {
+    const [Id, setId] = useState(0);
     const [formData, setFormData] = useState({
         nome: '',
-        serie: '0'
+        id_Serie: '',
+        slug: '',
     });
 
-    const series = [
-        { value: "0", label: "Selecione a série" },
-        { value: "1", label: "1º Ano" },
-        { value: "2", label: "2º Ano" },
-        { value: "3", label: "3º Ano" }
-    ];
+    const [Series, setSeries] = useState<any[]>([]);
 
     //configura exibição do Alert
     const [alert, setAlert] = useState({
@@ -31,6 +30,60 @@ const FormTipoEstabelecimento: React.FC = () => {
         onConfirm: () => { },
         onClose: () => { }
     });
+
+    //Verifica ID
+    const verificaId = () => {
+        const url = window.location.pathname;
+        const id = url.split('/').pop();
+
+
+        if (id !== 'form') {
+
+            setId(parseInt(id ? id : '0'));
+            //buscar os dados do estado
+            axios.get(`${server.url}${server.endpoints.tipo_estabelecimento}/${id}`).then(response => {
+
+                setFormData(response.data);
+
+            }).catch(error => {
+                console.error("Erro:", error);
+            });
+        }
+    };
+
+    useEffect(() => {
+        verificaId();
+    }, []);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+
+                const response = await axios.get(
+                    `${server.url}${server.endpoints.serie}`,
+                    {
+                        //parâmetros
+                    }
+                );
+
+                console.log("Dados:", response.data.$values);
+
+                //ajustar array para que o campo value seja o id do estado e o campo label seja o nome do estado, e adiciona uma opção padrão com value 0 e label "Selecione"
+                response.data = response.data.$values.map((item: any) => {
+                    return { value: item.id, label: item.nome };
+                });
+
+                response.data.unshift({ value: 0, label: 'Selecione' });
+
+                setSeries(response.data);
+
+            } catch (error) {
+                console.error("Erro:", error);
+            }
+        };
+
+        fetchData();
+    }, []);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -65,7 +118,7 @@ const FormTipoEstabelecimento: React.FC = () => {
         var mensagem_erro = [];
 
         var nome = validaCampos(formData.nome, 'Nome', true);
-        var serie = validaCampos(formData.serie, 'Série', true);
+        var serie = validaCampos(formData.id_Serie, 'Estado', true);
 
         if (nome.erro) {
             mensagem_erro.push(nome.mensagem_erro);
@@ -92,34 +145,95 @@ const FormTipoEstabelecimento: React.FC = () => {
 
             return;
         } else {
-            setAlert({
-                show: true,
-                success: true,
-                title: 'Sucesso',
-                message: ['Tipo de Estabelecimento cadastrada com sucesso'],
-                onConfirm: () => {
-                    //recarregar a página
-                    window.location.reload();
-                },
-                onClose: () => {
-                    //recarregar a página
-                    window.location.reload();
-                }
-            });
+            var slug = formData.nome.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
+            formData.slug = slug;
+
+            console.log('FORMDATA', formData);
+
+            if (Id === 0) {
+                axios.post(`${server.url}${server.endpoints.tipo_estabelecimento}`, formData).then(response => {
+
+                    setAlert({
+                        show: true,
+                        success: true,
+                        title: 'Sucesso',
+                        message: ['Tipo de Estabelecimento cadastrado com sucesso'],
+                        onConfirm: () => {
+                            //recarregar a página
+                            window.location.reload();
+                        },
+                        onClose: () => {
+                            //recarregar a página
+                            window.location.reload();
+                        }
+                    });
+                }).catch(error => {
+                    console.error("Erro:", error);
+
+                    setAlert({
+                        show: true,
+                        success: false,
+                        title: 'Erro',
+                        message: ['Erro ao cadastrar tipo de estabelecimento'],
+                        onConfirm: () => {
+                            setAlert({ ...alert, show: false });
+                        },
+                        onClose: () => {
+                            setAlert({ ...alert, show: false });
+                        }
+                    });
+
+                });
+            } else {
+                axios.put(`${server.url}${server.endpoints.tipo_estabelecimento}/${Id}`, formData).then(response => {
+                    console.log("Dados:", response.data);
+
+                    setAlert({
+                        show: true,
+                        success: true,
+                        title: 'Sucesso',
+                        message: ['Tipo de estabelecimento atualizado com sucesso'],
+                        onConfirm: () => {
+                            //recarregar a página
+                            window.location.reload();
+                        },
+                        onClose: () => {
+                            //recarregar a página
+                            window.location.reload();
+                        }
+                    });
+                }).catch(error => {
+                    console.error("Erro:", error);
+
+                    setAlert({
+                        show: true,
+                        success: false,
+                        title: 'Erro',
+                        message: ['Erro ao atualizar tipo de estabelecimento'],
+                        onConfirm: () => {
+                            setAlert({ ...alert, show: false });
+                        },
+                        onClose: () => {
+                            setAlert({ ...alert, show: false });
+                        }
+                    });
+
+                });
+            }
         }
     }
 
     return (
         <Layout>
 
-            <Breadcrumb paginas={[{ texto: "Home", href: '/' }, { texto: "Tipo de Estabelecimento", href: "/tipos-estabelecimentos/" }, { texto: "Formulário Tipo de Estabelecimento", href: "#" }]} />
+            <Breadcrumb paginas={[{ texto: "Home", href: '/' }, { texto: "Tipo Estabelecimento", href: "/tipos-estabelecimento/" }, { texto: "Formulário Tipo Estabelecimento", href: "#" }]} />
 
-            <Titulo titulo="Formulário Tipo de Estabelecimento" />
+            <Titulo titulo="Formulário Tipo Estabelecimento" />
 
             <ContainerForm title="Informações Básicas">
                 <Row>
-                    <CampoSelect label="Série" name="serie" options={series} className="col-md-2" onChange={handleChange} />
-                    <CampoTexto label="Nome" name="nome" tipo="text" className="col-md-10" onChange={handleChange} />
+                    <CampoTexto label="Nome" name="nome" value={formData.nome} tipo="text" className="col-md-8" onChange={handleChange} />
+                    <CampoSelect label="Série" name="id_Serie" value={formData.id_Serie} options={Series} className="col-md-4" onChange={handleChange} />
                 </Row>
 
                 <Row className="justify-content-end">

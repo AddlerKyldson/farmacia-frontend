@@ -12,6 +12,8 @@ const server = {
         medicamento_movimentacao: '/Medicamento_Movimentacao',
         medicamento_movimentacao_item: '/Medicamento_Movimentacao_Item',
         login: '/auth/login',
+        serie: '/Serie',
+        tipo_estabelecimento: '/Tipo_Estabelecimento',
     },
 };
 

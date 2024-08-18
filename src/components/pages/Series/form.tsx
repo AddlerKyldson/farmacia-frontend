@@ -1,16 +1,21 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Layout from "../../structure/Layout";
 import Breadcrumb from "../../other/breadCrumb";
 import Titulo from "../../other/tituloPage";
 import ContainerForm from "../../other/form/containerForm";
 import CampoTexto from "../../other/form/campoTexto";
+import CampoSelect from "../../other/form/campoSelect";
 import BotaoSubmit from "../../other/form/botaoSubmit";
 import Row from "../../other/grid/row";
 import Alert from "../../other/modal/alert";
+import axios from "axios";
+import server from "../../../utils/data/server";
 
 const FormSeries: React.FC = () => {
+    const [Id, setId] = useState(0);
     const [formData, setFormData] = useState({
         nome: '',
+        slug: ''
     });
 
     //configura exibição do Alert
@@ -23,6 +28,30 @@ const FormSeries: React.FC = () => {
         onClose: () => { }
     });
 
+    //Verifica ID
+    const verificaId = () => {
+        const url = window.location.pathname;
+        const id = url.split('/').pop();
+
+
+        if (id !== 'form') {
+
+            setId(parseInt(id ? id : '0'));
+            //buscar os dados do serie
+            axios.get(`${server.url}${server.endpoints.serie}/${id}`).then(response => {
+
+                setFormData(response.data);
+
+            }).catch(error => {
+                console.error("Erro:", error);
+            });
+        }
+    };
+
+    useEffect(() => {
+        verificaId();
+    }, []);
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
 
@@ -32,7 +61,7 @@ const FormSeries: React.FC = () => {
         }));
     };
 
-    function validaCampos(value = '', nome_campo = '', obrigatorio = false, tamanho = null) {
+    function validaCampos(value = '', nome_campo = '', obrigatorio = false, tamanho = 0) {
         let erro = false;
         let mensagem_erro = '';
 
@@ -41,7 +70,7 @@ const FormSeries: React.FC = () => {
             mensagem_erro = `Campo ${nome_campo} obrigatório`;
         }
 
-        if (tamanho !== null && value !== null && value.length !== tamanho) {
+        if (tamanho !== 0 && tamanho !== null && value !== null && value.length !== tamanho) {
             erro = true;
             mensagem_erro = `O campo deve ter ${tamanho} caracteres`;
         }
@@ -50,6 +79,23 @@ const FormSeries: React.FC = () => {
     }
 
     function handleSubmit(e: any) {
+
+        //Alerta de Carregando
+        setAlert({
+            show: true,
+            success: true,
+            title: 'Carregando',
+            message: ['Carregando solicitação...'],
+            onConfirm: () => {
+                //recarregar a página
+                //window.location.reload();
+            },
+            onClose: () => {
+                //recarregar a página
+                //window.location.reload();
+            }
+        });
+
         e.preventDefault();
         console.log(formData);
 
@@ -78,33 +124,95 @@ const FormSeries: React.FC = () => {
 
             return;
         } else {
-            setAlert({
-                show: true,
-                success: true,
-                title: 'Sucesso',
-                message: ['Série cadastrada com sucesso'],
-                onConfirm: () => {
-                    //recarregar a página
-                    window.location.reload();
-                },
-                onClose: () => {
-                    //recarregar a página
-                    window.location.reload();
-                }
-            });
+
+            var slug = formData.nome.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
+            formData.slug = slug;
+
+            if (Id === 0) {
+                axios.post(`${server.url}${server.endpoints.serie}`, formData).then(response => {
+                    console.log("Dados:", response.data);
+
+                    setAlert({
+                        show: true,
+                        success: true,
+                        title: 'Sucesso',
+                        message: ['serie cadastrada com sucesso'],
+                        onConfirm: () => {
+                            //recarregar a página
+                            window.location.reload();
+                        },
+                        onClose: () => {
+                            //recarregar a página
+                            window.location.reload();
+                        }
+                    });
+                }).catch(error => {
+                    console.error("Erro:", error);
+
+                    setAlert({
+                        show: true,
+                        success: false,
+                        title: 'Erro',
+                        message: ['Erro ao cadastrar serie'],
+                        onConfirm: () => {
+                            setAlert({ ...alert, show: false });
+                        },
+                        onClose: () => {
+                            setAlert({ ...alert, show: false });
+                        }
+                    });
+
+                });
+            } else {
+                axios.put(`${server.url}${server.endpoints.serie}/${Id}`, formData).then(response => {
+                    console.log("Dados:", response.data);
+
+                    setAlert({
+                        show: true,
+                        success: true,
+                        title: 'Sucesso',
+                        message: ['Série atualizada com sucesso'],
+                        onConfirm: () => {
+                            //recarregar a página
+                            window.location.reload();
+                        },
+                        onClose: () => {
+                            //recarregar a página
+                            window.location.reload();
+                        }
+                    });
+                }).catch(error => {
+                    console.error("Erro:", error);
+
+                    setAlert({
+                        show: true,
+                        success: false,
+                        title: 'Erro',
+                        message: ['Erro ao atualizar serie'],
+                        onConfirm: () => {
+                            setAlert({ ...alert, show: false });
+                        },
+                        onClose: () => {
+                            setAlert({ ...alert, show: false });
+                        }
+                    });
+
+                });
+            }
+
         }
     }
 
     return (
         <Layout>
 
-            <Breadcrumb paginas={[{ texto: "Home", href: '/' }, { texto: "Séries", href: "/series/" }, { texto: "Formulário Séries", href: "#" }]} />
+            <Breadcrumb paginas={[{ texto: "Home", href: '/' }, { texto: "Series", href: "/Series/" }, { texto: "Formulário Series", href: "#" }]} />
 
             <Titulo titulo="Formulário Séries" />
 
             <ContainerForm title="Informações Básicas">
                 <Row>
-                    <CampoTexto label="Nome" name="nome" tipo="text" className="col-md-12" onChange={handleChange} />
+                    <CampoTexto label="Nome" name="nome" value={formData.nome} tipo="text" className="col-md-8" onChange={handleChange} />
                 </Row>
 
                 <Row className="justify-content-end">
