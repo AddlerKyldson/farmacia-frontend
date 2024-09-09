@@ -34,8 +34,8 @@ export const Overlay = styled.div`
 `;
 
 export const MenuContainer = styled.nav<{ isVisible: boolean }>`
-    background-color: #fff;
-    color: #333;
+    background-color: #2d3436;
+    color: #dfe6e9;
     z-index: 1001;
     height: 100vh;
     transition: left 0.3s ease;
@@ -61,30 +61,36 @@ export const MenuUl = styled.ul`
 `;
 
 export const MenuItem = styled.li`
-    border-bottom: solid 1px #efefef;
+    border-bottom: solid 1px #41484b;
     width: 100%;
-`;
-
-export const MenuLink = styled.a`
-    color: #555;
-    text-decoration: none;
-    padding: 0.8rem;
-    display: block;
-    cursor: pointer;
-    &:hover {
-        background-color: #f0f0f0;
-    }
 `;
 
 export const SubMenu = styled.ul`
     list-style: none;
-    padding-left: 20px;
+    padding-left: 0px;
     margin: 0;
     display: flex;
     flex-direction: column;
-    background-color: #f7f7f7;
+    background-color: #41484b;
+`;
+
+export const MenuLink = styled.a`
+    color: #dfe6e9;
+    text-decoration: none;
+    padding: 0.8rem;
+    display: flex;
+    cursor: pointer;
+    &:hover {
+        background-color: #000;
+    }
+
+    /* Estilo específico quando dentro de SubMenu */
+    ${SubMenu} & {
+        padding-left: 1.5rem; /* Por exemplo, pode adicionar mais indentação */
+        font-size: 0.9rem; /* Tamanho de fonte diferente */
+    }
 `;
 
 export const SubMenuItem = styled.li`
-    border-bottom: 1px solid #efefef;
+
 `;

@@ -10,6 +10,7 @@ export const MainContainer = styled.div`
     position: relative;
     display: flex;
     flex: 1;
+    background-color: #f5f5f5;
 `;
 
 export const PageContainer = styled.main`

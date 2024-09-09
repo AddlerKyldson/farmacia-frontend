@@ -170,9 +170,6 @@ const TipoEstabelecimento: React.FC = () => {
                     } />
                     <div className="col-md-12 d-flex justify-content-end">
                         <button className="btn btn-primary ms-2" onClick={handleSearch}>{"Buscar"}</button>
-                        <button className="btn btn-warning ms-2" onClick={() => {
-                            window.location.href = `${server.url}${server.endpoints.tipo_estabelecimento}/gerar_excel`;
-                        }}>{"Gerar Excel"}</button>
                     </div>
                 </div>
             </Filtro>

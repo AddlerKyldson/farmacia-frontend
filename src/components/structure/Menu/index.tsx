@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { MenuContainer, MenuItem, MenuLink, MenuUl, MobileMenuButton, Overlay, SubMenu, SubMenuItem } from "./styles";
 import { useAuth } from "../../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { ArrowBack, ArrowForward, ArrowLeft, ArrowRight, Build, BusinessCenter, Category, Checklist, ContentPasteSearch, Coronavirus, FindInPage, Handshake, HealthAndSafety, Home, HomeMini, ManageAccounts, Medication, MonitorWeight, PrecisionManufacturing, RemoveCircle, Storefront, Troubleshoot, } from '@mui/icons-material';
 import { useMenu } from "./MenuContext";
 
 const Menu: React.FC = () => {
@@ -45,29 +46,46 @@ const Menu: React.FC = () => {
             <MenuContainer isVisible={isMenuVisible}>
                 <MenuUl>
                     <MenuItem>
-                        <MenuLink href="/dashboard">{"Home"}</MenuLink>
+                        <MenuLink href="/dashboard">
+                            <Home className="me-1" />
+                            {"Home"}
+                        </MenuLink>
                     </MenuItem>
                     {permissoesJson.permissao_vigilancia_sanitaria && (
                         <>
                             <MenuItem onClick={toggleVigilanciaSubMenu}>
-                                <MenuLink>{"Vigilância Sanitária"}</MenuLink>
+                                <MenuLink>
+                                    <ContentPasteSearch className="me-1" />
+                                    {"Vigilância Sanitária"}</MenuLink>
                             </MenuItem>
                             {isVigilanciaSubMenuVisible && (
                                 <SubMenu>
                                     <SubMenuItem>
-                                        <MenuLink href="/estabelecimentos">{"Estabelecimentos"}</MenuLink>
+                                        <MenuLink href="/estabelecimentos">
+                                            <Storefront className="me-1" />
+                                            {"Estabelecimentos"}
+                                        </MenuLink>
                                     </SubMenuItem>
                                     <SubMenuItem>
-                                        <MenuLink href="/tipos-estabelecimentos">{"Tipos de Estabelecimentos"}</MenuLink>
+                                        <MenuLink href="/tipos-estabelecimentos">
+                                            <Checklist className="me-1" />
+                                            {"Tipos de Estabelecimentos"}
+                                        </MenuLink>
                                     </SubMenuItem>
                                     <SubMenuItem>
-                                        <MenuLink href="/series">{"Séries"}</MenuLink>
+                                        <MenuLink href="/series">
+                                            <Category className="me-1" />
+                                            {"Séries"}
+                                        </MenuLink>
                                     </SubMenuItem>
                                     {/* <SubMenuItem>
                                     <MenuLink href="/responsaveis">{"Responsáveis"}</MenuLink>
                                 </SubMenuItem> */}
                                     <SubMenuItem>
-                                        <MenuLink href="/inspecoes">{"Inspeções"}</MenuLink>
+                                        <MenuLink href="/inspecoes">
+                                            <Troubleshoot className="me-1" />
+                                            {"Inspeções"}
+                                        </MenuLink>
                                     </SubMenuItem>
                                 </SubMenu>
                             )}
@@ -76,20 +94,32 @@ const Menu: React.FC = () => {
                     {permissoesJson.permissao_farmacia && (
                         <>
                             <MenuItem onClick={toggleMedicamentosSubMenu}>
-                                <MenuLink>{"Farmácia"}</MenuLink>
+                                <MenuLink>
+                                    <HealthAndSafety className="me-1" />
+                                    {"Farmácia"}
+                                </MenuLink>
                             </MenuItem>
                             {isMedicamentosSubMenuVisible && (
                                 <SubMenu>
                                     <SubMenuItem>
-                                        <MenuLink href="/medicamentos">Itens</MenuLink>
+                                        <MenuLink href="/medicamentos">
+                                            <Medication className="me-1" />
+                                            Itens
+                                        </MenuLink>
                                     </SubMenuItem>
                                     {['1', '2', '8'].includes(user_type) && (
                                         <>
                                             <SubMenuItem>
-                                                <MenuLink href="/medicamentos/entradas">Entradas</MenuLink>
+                                                <MenuLink href="/medicamentos/entradas">
+                                                    <ArrowBack className="me-1" />
+                                                    Entradas
+                                                </MenuLink>
                                             </SubMenuItem>
                                             <SubMenuItem>
-                                                <MenuLink href="/medicamentos/saidas">Saídas</MenuLink>
+                                                <MenuLink href="/medicamentos/saidas">
+                                                    <ArrowForward className="me-1" />
+                                                    Saídas
+                                                </MenuLink>
                                             </SubMenuItem>
                                         </>
                                     )}
@@ -100,12 +130,18 @@ const Menu: React.FC = () => {
                     {permissoesJson.permissao_sim_sinasc && (
                         <>
                             <MenuItem onClick={toggleSimsinascSubMenu}>
-                                <MenuLink>{"SIM/SINASC"}</MenuLink>
+                                <MenuLink>
+                                    <MonitorWeight className="me-1" />
+                                    {"SIM/SINASC"}
+                                </MenuLink>
                             </MenuItem>
                             {isSimsinascSubMenuVisible && (
                                 <SubMenu>
                                     <SubMenuItem>
-                                        <MenuLink href="/investigacoes-obito">{"Investigações de Óbito"}</MenuLink>
+                                        <MenuLink href="/investigacoes-obito">
+                                            <FindInPage className="me-1" />
+                                            {"Investigações de Óbito"}
+                                        </MenuLink>
                                     </SubMenuItem>
                                 </SubMenu>
                             )}
@@ -114,12 +150,18 @@ const Menu: React.FC = () => {
                     {permissoesJson.permissao_sinan && (
                         <>
                             <MenuItem onClick={toggleSinanSubMenu}>
-                                <MenuLink>{"SINAN"}</MenuLink>
+                                <MenuLink>
+                                    <Coronavirus className="me-1" />
+                                    {"SINAN"}
+                                </MenuLink>
                             </MenuItem>
                             {isSinanSubMenuVisible && (
                                 <SubMenu>
                                     <SubMenuItem>
-                                        <MenuLink href="/notificacoes-negativas">{"Notificações Negativas"}</MenuLink>
+                                        <MenuLink href="/notificacoes-negativas">
+                                            <RemoveCircle className="me-1" />
+                                            {"Notificações Negativas"}
+                                        </MenuLink>
                                     </SubMenuItem>
                                 </SubMenu>
                             )}
@@ -128,12 +170,18 @@ const Menu: React.FC = () => {
                     {permissoesJson.permissao_bolsa_familia && (
                         <>
                             <MenuItem onClick={toggleBolsaFamiliaSubMenu}>
-                                <MenuLink>{"Bolsa Família"}</MenuLink>
+                                <MenuLink>
+                                    <Handshake className="me-1" />
+                                    {"Bolsa Família"}
+                                </MenuLink>
                             </MenuItem>
                             {isBolsaFamiliaSubMenuVisible && (
                                 <SubMenu>
                                     <SubMenuItem>
-                                        <MenuLink href="/bolsa-familia">{"Bolsa Família"}</MenuLink>
+                                        <MenuLink href="/bolsa-familia">
+                                            <Handshake className="me-1" />
+                                            {"Bolsa Família"}
+                                        </MenuLink>
                                     </SubMenuItem>
                                 </SubMenu>
                             )}
@@ -142,7 +190,10 @@ const Menu: React.FC = () => {
                     {['1'].includes(user_type) && (
                         <>
                             <MenuItem onClick={toggleAdministracaoSubMenu}>
-                                <MenuLink>{"Administração"}</MenuLink>
+                                <MenuLink>
+                                    <ManageAccounts className="me-1" />
+                                    {"Administração"}
+                                </MenuLink>
                             </MenuItem>
                             {isAdministracaoSubMenuVisible && (
                                 <SubMenu>

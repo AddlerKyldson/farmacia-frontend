@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { HeaderContainer, LinkOption, LiOption, UlOptions } from "./styles";
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import CalendarTodayIcon from '@mui/icons-material/CalendarToday'; // Ícone de calendário
-import InfoIcon from '@mui/icons-material/Info'; // Ícone de informação
 import MenuIcon from '@mui/icons-material/Menu'; // Ícone de informação
 import { useAuth } from "../../../context/AuthContext";
 import Menu from "../Menu";
@@ -69,7 +67,7 @@ const Header: React.FC = () => {
                         {user ? user.unique_name.split(' ')[0] : 'Usuário Inválido'}
                     </LinkOption>
                 </LiOption>
-                <LiOption>
+                <LiOption className="d-md-none">
                     <LinkOption href="#" onClick={toggleMenu}>
                         <MenuIcon style={{ marginRight: '8px' }} />
                     </LinkOption>
