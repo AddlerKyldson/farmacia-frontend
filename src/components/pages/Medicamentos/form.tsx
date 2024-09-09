@@ -9,9 +9,14 @@ import Row from "../../other/grid/row";
 import Alert from "../../other/modal/alert";
 import axios from "axios";
 import server from "../../../utils/data/server";
+import { useAuth } from "../../../context/AuthContext";
 
 const FormMedicamentos: React.FC = () => {
     const [Id, setId] = useState(0);
+    const [id_usuario, setId_Usuario] = useState(0);
+    const { user } = useAuth();
+    const [loading, setLoading] = useState(true);
+
     const [formData, setFormData] = useState({
         codigo_Barras: '',
         nome: '',
@@ -51,7 +56,15 @@ const FormMedicamentos: React.FC = () => {
             //buscar os dados do estado
             axios.get(`${server.url}${server.endpoints.medicamento}/${id}`).then(response => {
 
-                setFormData(response.data);
+                try {
+                    const data = response.data;
+
+                    data.Id_Usuario_Alteracao = user ? user.id : '0';
+
+                    setFormData(data);
+                } catch (error) {
+                    console.error("Erro:", error);
+                }
 
             }).catch(error => {
                 console.error("Erro:", error);
@@ -62,7 +75,19 @@ const FormMedicamentos: React.FC = () => {
 
     useEffect(() => {
         verificaId();
-    }, []);
+    }, [Id, user]);
+
+    useEffect(() => {
+
+        setId_Usuario(parseInt(user ? user.id : '0'));
+
+        if (!Id) { // Só atualiza se for um novo registro
+            setFormData((prevState) => ({
+                ...prevState,
+                Id_Usuario_Cadastro: user ? user.id : '0',
+            }));
+        }
+    }, [user]); // Executa quando o `user` estiver disponível
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;

@@ -6,6 +6,7 @@ export const ContainerResultado = styled.div`
     margin-top: 1rem;
     border: solid 1px #eee;
     border-radius: 0.5rem;
+    position: relative;
 `;
 
 export const ResultadoTitle = styled.h2`

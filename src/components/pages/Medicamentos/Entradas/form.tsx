@@ -10,6 +10,7 @@ import Alert from "../../../other/modal/alert";
 import BotaoExcluir from "../../../other/form/botaoExcluir";
 import axios from "axios";
 import server from "../../../../utils/data/server";
+import { useAuth } from "../../../../context/AuthContext";
 
 interface Medicamentos {
     codigo_barras: number;
@@ -24,6 +25,9 @@ const FormEntradasMedicamentos: React.FC = () => {
     const [Id, setId] = useState(0);
     const [medicamentos, setMedicamentos] = useState<Medicamentos[]>([]);
     const [dropdownOptions, setDropdownOptions] = useState<DropdownOption[]>([]);
+    const [id_usuario, setId_Usuario] = useState(0);
+    const { user } = useAuth();
+    const [loading, setLoading] = useState(true);
 
     const [formData, setFormData] = useState({
         descricao: '',
@@ -62,7 +66,11 @@ const FormEntradasMedicamentos: React.FC = () => {
             //buscar os dados do estado
             axios.get(`${server.url}${server.endpoints.medicamento_movimentacao}/${id}`).then(response => {
 
-                setFormData(response.data);
+                const data = response.data;
+
+                data.Id_Usuario_Alteracao = user ? user.id : '0';
+
+                setFormData(data);
 
                 verificaMedicamentos(parseInt(id ? id : '0'));
 
@@ -77,7 +85,19 @@ const FormEntradasMedicamentos: React.FC = () => {
 
     useEffect(() => {
         verificaId();
-    }, []);
+    }, [Id, user]);
+
+    useEffect(() => {
+
+        setId_Usuario(parseInt(user ? user.id : '0'));
+
+        if (!Id) { // Só atualiza se for um novo registro
+            setFormData((prevState) => ({
+                ...prevState,
+                Id_Usuario_Cadastro: user ? user.id : '0',
+            }));
+        }
+    }, [user]); // Executa quando o `user` estiver disponível
 
     const fetchDropdownOptions = async (name: string, query: string, index: any) => {
         try {
@@ -159,7 +179,7 @@ const FormEntradasMedicamentos: React.FC = () => {
                 console.log("Resposta API:", response.data.description);
 
                 let nome = response.data.description;
-                
+
                 // Atualizando o estado de medicamentos
                 setMedicamentos(prevMedicamentos => prevMedicamentos.map((med, i) => {
                     if (i !== index) {
@@ -403,7 +423,7 @@ const FormEntradasMedicamentos: React.FC = () => {
                     <Row key={index}>
                         <CampoTexto label="Código de Barras" value={medicamento.codigo_barras} name="codigo_barras" tipo="number" className="col-md-3" onChange={(e) => handleChangeMedicamento(e, index)} onBlur={(e) => verificaCodigoBarras(parseInt(e.target.value), index)} >
                             {medicamento.showDropdown && (
-                                <div className="dropdown-menu dropdown-options-preview" style={{ display: 'block' }}>
+                                <div className="dropdown-menu dropdown-options-preview dropdown-medicamentos" style={{ display: 'block' }}>
                                     {dropdownOptions.map((option, idx) => (
                                         <a key={idx} className="dropdown-item" href="#" onClick={() => handleOptionSelect(option, index)}>
                                             {`${option.codigo_Barras} - ${option.apelido} (${option.nome})`}

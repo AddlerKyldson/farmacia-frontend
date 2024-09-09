@@ -24,7 +24,7 @@
     background: #333;
 }
 
-.dropdown-item{
+.dropdown-medicamentos .dropdown-item{
     padding: 10px;
     cursor: pointer;
     font-size: 0.8rem;

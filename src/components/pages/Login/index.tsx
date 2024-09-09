@@ -108,7 +108,7 @@ const LoginPage: React.FC = () => {
                 show: true,
                 success: false,
                 title: 'Erro',
-                message: ['Erro ao efetuar login. Por favor, tente novamente.'],
+                message: ['Erro ao efetuar login. Por favor, tente novamente.' + error],
                 onConfirm: () => setAlert({ ...alert, show: false }),
                 onClose: () => setAlert({ ...alert, show: false })
             });

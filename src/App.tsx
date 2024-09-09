@@ -64,6 +64,7 @@ const App: React.FC = () => {
                     <Route path="/cidadaos/form" element={<PrivateRoute><FormCidadaos /></PrivateRoute>} />
                     <Route path="/inspecoes" element={<PrivateRoute><Inspecoes /></PrivateRoute>} />
                     <Route path="/inspecoes/form" element={<PrivateRoute><FormInspecoes /></PrivateRoute>} />
+                    <Route path="/inspecoes/form/:id" element={<PrivateRoute><FormInspecoes /></PrivateRoute>} />
                     <Route path="/regionais" element={<PrivateRoute><Regionais /></PrivateRoute>} />
                     <Route path="/regionais/form" element={<PrivateRoute><FormRegionais /></PrivateRoute>} />
                     <Route path="/regionais/form/:id" element={<PrivateRoute><FormRegionais /></PrivateRoute>} />

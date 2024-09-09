@@ -7,6 +7,7 @@ export const LayoutContainer = styled.div`
 `;
 
 export const MainContainer = styled.div`
+    position: relative;
     display: flex;
     flex: 1;
 `;

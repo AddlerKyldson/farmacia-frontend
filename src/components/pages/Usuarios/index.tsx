@@ -9,8 +9,15 @@ import server from "../../../utils/data/server";
 import Alert from "../../other/modal/alert";
 import Confirm from "../../other/modal/confirm";
 
+const ITEMS_PER_PAGE = 20;
+
+
 const Usuarios: React.FC = () => {
     const [dados, setDados] = React.useState<any[]>([]);
+    const [searchTerm, setSearchTerm] = useState<string>(''); // Termo de busca efetivo
+    const [page, setPage] = useState<number>(1);
+    const [total, setTotal] = useState<number>(0);
+
     //configura exibição do Alert
     const [alert, setAlert] = useState({
         show: false,
@@ -36,12 +43,16 @@ const Usuarios: React.FC = () => {
                 const response = await axios.get(
                     `${server.url}${server.endpoints.usuario}`,
                     {
-                        //parâmetros
+                        params: {
+                            filtro_busca: searchTerm,
+                            page: page,
+                            perPage: ITEMS_PER_PAGE
+                        }
                     }
                 );
 
                 console.log("Dados:", response.data);
-                setDados(response.data.$values);
+                setDados(response.data.dados.$values);
 
             } catch (error) {
                 console.error("Erro:", error);
