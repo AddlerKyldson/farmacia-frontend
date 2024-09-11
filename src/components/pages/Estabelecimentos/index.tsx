@@ -11,6 +11,7 @@ import server from "../../../utils/data/server";
 import axios from "axios";
 import Alert from "../../other/modal/alert";
 import Confirm from "../../other/modal/confirm";
+import CampoTexto from "../../other/form/campoTexto";
 
 const ITEMS_PER_PAGE = 20;
 
@@ -165,7 +166,14 @@ const Estabelecimentos: React.FC = () => {
             <Titulo titulo="Estabelecimentos" botao={{ texto: "Cadastrar", href: "/estabelecimentos/form" }} />
 
             <Filtro title="Filtrar">
-                <p>{"Estabelecimentos"}</p>
+                <div className="row">
+                    <CampoTexto label="Descrição" tipo="text" name="filtro_busca" placeholder="Buscar por código de barras, nome ou apelido" value={filtroBusca} onChange={
+                        (e) => setFiltroBusca(e.target.value)
+                    } />
+                    <div className="col-md-12 d-flex justify-content-end">
+                        <button className="btn btn-primary ms-2" onClick={handleSearch}>{"Buscar"}</button>
+                    </div>
+                </div>
             </Filtro>
 
             <Resultado title="Resultado">

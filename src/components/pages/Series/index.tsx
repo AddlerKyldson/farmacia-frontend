@@ -8,10 +8,16 @@ import Alert from "../../other/modal/alert";
 import Confirm from "../../other/modal/confirm";
 import axios from "axios";
 import server from "../../../utils/data/server";
+import CampoTexto from "../../other/form/campoTexto";
+
+const ITEMS_PER_PAGE = 20;
 
 const Series: React.FC = () => {
 
     const [dados, setDados] = React.useState<any[]>([]);
+    const [searchTerm, setSearchTerm] = useState<string>(''); // Termo de busca efetivo
+    const [page, setPage] = useState<number>(1);
+    const [filtroBusca, setFiltroBusca] = useState<string>(''); // Input field state
     
     //configura exibição do Alert
     const [alert, setAlert] = useState({
@@ -38,7 +44,11 @@ const Series: React.FC = () => {
                 const response = await axios.get(
                     `${server.url}${server.endpoints.serie}`,
                     {
-                        //parâmetros
+                        params: {
+                            filtro_busca: searchTerm,
+                            page: page,
+                            perPage: ITEMS_PER_PAGE
+                        }
                     }
                 );
                 
@@ -142,6 +152,11 @@ const Series: React.FC = () => {
 
     }
 
+    const handleSearch = () => {
+        setSearchTerm(filtroBusca);
+        setPage(1); // Resetar para a primeira página ao buscar
+    };
+
     return (
         <Layout>
 
@@ -150,7 +165,14 @@ const Series: React.FC = () => {
             <Titulo titulo="Series" botao={{ texto: "Cadastrar", href: "/series/form" }} />
 
             <Filtro title="Filtrar">
-                <p>{"Series"}</p>
+                <div className="row">
+                    <CampoTexto label="Descrição" tipo="text" name="filtro_busca" placeholder="Buscar por código de barras, nome ou apelido" value={filtroBusca} onChange={
+                        (e) => setFiltroBusca(e.target.value)
+                    } />
+                    <div className="col-md-12 d-flex justify-content-end">
+                        <button className="btn btn-primary ms-2" onClick={handleSearch}>{"Buscar"}</button>
+                    </div>
+                </div>
             </Filtro>
 
             <Resultado title="Resultado">

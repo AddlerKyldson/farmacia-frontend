@@ -1,6 +1,6 @@
 import styled from "styled-components";
 
-export const PageLogin = styled.div`
+export const PageHome = styled.div`
     display: flex;
     justify-content: center;
     align-items: center;
@@ -12,7 +12,7 @@ export const PageLogin = styled.div`
     background-opacity: 0.5;
 `;
 
-export const ContainerLogin = styled.div`
+export const ContainerHome = styled.div`
     display: flex;
     justify-content: center;
     align-items: center;
@@ -20,7 +20,7 @@ export const ContainerLogin = styled.div`
     height: 100%;
 `;
 
-export const FormLogin = styled.form`
+export const FormHome = styled.form`
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -31,12 +31,12 @@ export const FormLogin = styled.form`
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 `;
 
-export const TitleLogin = styled.h1`
+export const TitleHome = styled.h1`
     font-size: 24px;
     margin: 10px 0;
 `;
 
-export const ButtonLogin = styled.button`
+export const ButtonHome = styled.button`
     padding: 10px;
     margin: 10px 0;
     border: none;
