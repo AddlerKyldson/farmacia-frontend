@@ -75,7 +75,7 @@ const FormBairros: React.FC = () => {
                 );
 
                 //ajustar array para que o campo value seja o id do estado e o campo label seja o nome do estado, e adiciona uma opção padrão com value 0 e label "Selecione"
-                response.data = response.data.map((item: any) => {
+                response.data = response.data.$values.map((item: any) => {
                     return { value: item.id, label: item.nome };
                 });
 
@@ -110,7 +110,7 @@ const FormBairros: React.FC = () => {
             }
 
             //ajustar array para que o campo value seja o id do estado e o campo label seja o nome do estado, e adiciona uma opção padrão com value 0 e label "Selecione"
-            response.data = response.data.map((item: any) => {
+            response.data = response.data.$values.map((item: any) => {
                 return { value: item.id, label: item.nome };
             });
 

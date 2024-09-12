@@ -201,7 +201,7 @@ const Inspecoes: React.FC = () => {
                             <th>{"Estabelecimento"}</th>
                             <th>{"Responsável"}</th>
                             <th>{"Data Inspeção"}</th>
-                            {['1', '2', '8'].includes(user_type) && <th>{"Opções"}</th>}
+                            {['1', '2', '8', '7'].includes(user_type) && <th>{"Opções"}</th>}
                         </tr>
                     </thead>
                     <tbody>
@@ -215,7 +215,7 @@ const Inspecoes: React.FC = () => {
 
                                     formatDate(new Date(dado.data_inspecao).toISOString().split('T')[0])
                                 }</td>
-                                {['1', '2', '8'].includes(user_type) && (
+                                {['1', '2', '8', '7'].includes(user_type) && (
                                     <td>
                                         <a href={`/inspecoes/form/${dado.id}`} className="btn btn-warning btn-sm">{"Editar"}</a>
                                         <button className="btn btn-danger btn-sm ms-1" onClick={() => handleExcluir(dado.id)}>{"Excluir"}</button>

@@ -12,8 +12,14 @@ import axios from "axios";
 import Alert from "../../other/modal/alert";
 import Confirm from "../../other/modal/confirm";
 import CampoTexto from "../../other/form/campoTexto";
+import { Button, Modal } from "react-bootstrap";
 
 const ITEMS_PER_PAGE = 20;
+
+interface Item {
+    id: number;
+    title: string;
+}
 
 const Estabelecimentos: React.FC = () => {
 
@@ -23,6 +29,12 @@ const Estabelecimentos: React.FC = () => {
     const [page, setPage] = useState<number>(1);
     const [filtroBusca, setFiltroBusca] = useState<string>(''); // Input field state
     const [searchTerm, setSearchTerm] = useState<string>(''); // Termo de busca efetivo
+    const [isModalRTOpen, setIsModalRTOpen] = useState(false);
+    const [selectedItemRT, setSelectedItemRT] = useState<Item | null>(null);
+    const [modalRTContent, setModalRTContent] = useState<string>('');
+    const [isModalRLOpen, setIsModalRLOpen] = useState(false);
+    const [selectedItemRL, setSelectedItemRL] = useState<Item | null>(null);
+    const [modalRLContent, setModalRLContent] = useState<string>('');
 
     const user_type = user?.role ? user?.role : '0';
 
@@ -158,6 +170,47 @@ const Estabelecimentos: React.FC = () => {
         setPage(1); // Resetar para a primeira página ao buscar
     };
 
+    const handleItemRTClick = (id: number) => {
+        // Abra o modal
+        setIsModalRTOpen(true);
+        // Faça a requisição ao servidor com axios
+        /* axios.get(`https://api.example.com/items/${id}`)
+            .then(response => {
+                setSelectedItemRT(response.data);
+                setModalRTContent(response.data.description); // Exemplo de dado recebido
+            })
+            .catch(error => {
+                console.error("Erro ao carregar dados:", error);
+            }); */
+
+
+    };
+
+    const handleItemRLClick = (id: number) => {
+        // Abra o modal
+        setIsModalRLOpen(true);
+        // Faça a requisição ao servidor com axios
+        /* axios.get(`https://api.example.com/items/${id}`)
+            .then(response => {
+                setSelectedItemRT(response.data);
+                setModalRTContent(response.data.description); // Exemplo de dado recebido
+            })
+            .catch(error => {
+                console.error("Erro ao carregar dados:", error);
+            }); */
+
+
+    };
+
+    const closeModalRT = () => {
+        setIsModalRTOpen(false);
+        setSelectedItemRT(null);
+    };
+
+    const closeModalRL = () => {
+        setIsModalRLOpen(false);
+        setSelectedItemRL(null);
+    };
     return (
         <Layout>
 
@@ -198,7 +251,7 @@ const Estabelecimentos: React.FC = () => {
                                 <td>{dado.telefone}</td>
                                 <td>{dado.email}</td>
                                 <td>
-                                    {['1', '2', '8'].includes(user_type) && (
+                                    {['1', '2', '8', '7'].includes(user_type) && (
                                         <div className="dropdown">
                                             <button
                                                 className="btn btn-secondary btn-sm dropdown-toggle"
@@ -213,10 +266,10 @@ const Estabelecimentos: React.FC = () => {
                                                 <li>
                                                     <a href={`/estabelecimentos/form/${dado.id}`} className="dropdown-item">Editar</a>
                                                 </li>
-                                                <li>
+                                                <li onClick={() => handleItemRLClick(dado.id)}>
                                                     <button className="dropdown-item">Responsáveis Legais</button>
                                                 </li>
-                                                <li>
+                                                <li onClick={() => handleItemRTClick(dado.id)}>
                                                     <button className="dropdown-item">Responsáveis Técnicos</button>
                                                 </li>
                                                 <li>
@@ -265,6 +318,26 @@ const Estabelecimentos: React.FC = () => {
                 onConfirm={confirm.onConfirm}
                 onClose={confirm.onClose}
             />
+
+            <Modal show={isModalRTOpen} onHide={closeModalRT}>
+                <Modal.Header closeButton>
+                    <Modal.Title>{selectedItemRT?.title}</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>Conteúdo do modal para {selectedItemRT?.title}</Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={closeModalRT}>Fechar</Button>
+                </Modal.Footer>
+            </Modal>
+
+            <Modal show={isModalRLOpen} onHide={closeModalRL}>
+                <Modal.Header closeButton>
+                    <Modal.Title>{selectedItemRL?.title}</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>Conteúdo do modal para {selectedItemRL?.title}</Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={closeModalRL}>Fechar</Button>
+                </Modal.Footer>
+            </Modal>
 
         </Layout>
     );
