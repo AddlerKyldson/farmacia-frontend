@@ -61,7 +61,7 @@ const FormularioEstabelecimentos: React.FC = () => {
         id_tipo_estabelecimento: '',
         slug: '',
         estabelecimento_Responsavel_Legal: responsaveisLegais,
-        estabelecimento_responsavel_tecnico: responsaveisTecnicos
+        estabelecimento_Responsavel_Tecnico: responsaveisTecnicos
     });
 
     const [Estados, setEstados] = useState<any[]>([]);
@@ -116,7 +116,7 @@ const FormularioEstabelecimentos: React.FC = () => {
 
         setFormData(prevState => ({
             ...prevState,
-            responsaveis_tecnicos: [...responsaveisTecnicos, novoResponsavelTecnico]
+            Estabelecimento_Responsavel_Legal: [...responsaveisTecnicos, novoResponsavelTecnico]
         }));
 
     }
@@ -404,6 +404,28 @@ const FormularioEstabelecimentos: React.FC = () => {
 
     };
 
+    const handleChangeResponsavelTecnico = (e: any, index: number) => {
+        const { name, value } = e.target;
+
+        const newValue = value;
+
+        setResponsaveisTecnicos(prevResponsaveisTecnicos => prevResponsaveisTecnicos.map((item, i) => {
+            if (i !== index) {
+                return item;
+            }
+            return {
+                ...item,
+                [name]: newValue
+            };
+        }));
+
+        setFormData(prevState => ({
+            ...prevState,
+            Estabelecimento_Responsavel_Tecnico: responsaveisTecnicos
+        }));
+
+    }
+
     function handleSubmit(e: any) {
 
         //Alerta de Carregando
@@ -666,18 +688,18 @@ const FormularioEstabelecimentos: React.FC = () => {
 
                             <div key={index} style={{ border: 'dashed 1px #ccc', padding: '15px', marginTop: '10px', backgroundColor: '#fbbc0517', borderRadius: '7px' }}>
                                 <Row>
-                                    <CampoTexto label="CPF" value={responsavelTecnico.cpf} name="cpf" tipo="text" className="col-md-3" onChange={handleChange} />
-                                    <CampoTexto label="Nome" value={responsavelTecnico.nome_responsavel} name="nome_responsavel" tipo="text" className="col-md-6" onChange={handleChange} />
-                                    <CampoSelect label="Escolaridade" name="escolaridade" options={escolaridade} className="col-md-3" onChange={handleChange} />
+                                    <CampoTexto label="CPF" value={responsavelTecnico.cpf} name="cpf" tipo="text" className="col-md-3" onChange={(e) => handleChangeResponsavelTecnico(e, index)} />
+                                    <CampoTexto label="Nome" value={responsavelTecnico.nome_responsavel} name="nome_responsavel" tipo="text" className="col-md-6" onChange={(e) => handleChangeResponsavelTecnico(e, index)} />
+                                    <CampoSelect label="Escolaridade" name="escolaridade" options={escolaridade} className="col-md-3" onChange={(e) => handleChangeResponsavelTecnico(e, index)} />
                                 </Row>
 
                                 <Row>
-                                    <CampoTexto label="Formação" value={responsavelTecnico.formacao} name="formacao" tipo="text" className="col-md-3" onChange={handleChange} />
-                                    <CampoTexto label="Especialização" value={responsavelTecnico.especializacao} name="especializacao" tipo="text" className="col-md-3" onChange={handleChange} />
-                                    <CampoTexto label="Registro no Conselho" value={responsavelTecnico.registro_conselho} name="registro_conselho" tipo="text" className="col-md-3" onChange={handleChange} />
+                                    <CampoTexto label="Formação" value={responsavelTecnico.formacao} name="formacao" tipo="text" className="col-md-3" onChange={(e) => handleChangeResponsavelTecnico(e, index)} />
+                                    <CampoTexto label="Especialização" value={responsavelTecnico.especializacao} name="especializacao" tipo="text" className="col-md-3" onChange={(e) => handleChangeResponsavelTecnico(e, index)} />
+                                    <CampoTexto label="Registro no Conselho" value={responsavelTecnico.registro_conselho} name="registro_conselho" tipo="text" className="col-md-3" onChange={(e) => handleChangeResponsavelTecnico(e, index)} />
                                 </Row>
                                 <Row>
-                                    <CampoTexto label="Email" name="email_responsavel" value={responsavelTecnico.email} tipo="email" className="col-md-3" onChange={(e) => handleChangeResponsavelLegal(e, index)} />
+                                    <CampoTexto label="Email" name="email" value={responsavelTecnico.email} tipo="email" className="col-md-3" onChange={(e) => handleChangeResponsavelTecnico(e, index)} />
                                 </Row>
                                 <div className="d-flex justify-content-end">
                                     <BotaoExcluir texto="Excluir" onClick={() => {
