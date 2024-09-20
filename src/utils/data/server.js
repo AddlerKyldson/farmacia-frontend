@@ -1,6 +1,6 @@
 const server = {
-    url: 'http://localhost:5279/api',
-    /* url: 'http://89.116.212.101:5279/api', */
+    /* url: 'http://localhost:5279/api', */
+    url: 'http://89.116.212.101:5279/api',
     endpoints: {
         usuario: '/Usuario',
         estado: '/Estado',
