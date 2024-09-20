@@ -45,9 +45,9 @@ const FormularioEstabelecimentos: React.FC = () => {
         inscricao_estadual: '',
         inscricao_municipal: '',
         logradouro: '',
-        id_Estado: '',
-        id_Cidade: '',
-        id_Bairro: '',
+        id_estado: '',
+        id_cidade: '',
+        id_bairro: '',
         cep: '',
         complemento: '',
         telefone: '',
@@ -315,6 +315,148 @@ const FormularioEstabelecimentos: React.FC = () => {
             loadBairros(parseInt(value));
         }
 
+        if (name === 'cnpj') {
+            setFormData(prevState => ({
+                ...prevState,
+                cnpj: formataCNPJ(value)
+            }));
+        }
+
+    };
+
+    const formataCNPJ = (cnpj: string) => {
+        //retornar apenas números e não deixar adicionar mais de 14 caracteres
+        return cnpj.replace(/\D/g, '').substring(0, 14);
+    }
+
+    // Função de validação de CNPJ
+    const validaCNPJ = (cnpj: string): boolean => {
+        cnpj = cnpj.replace(/[^\d]+/g, '');
+
+        if (cnpj.length !== 14) return false;
+
+        // Eliminar CNPJs inválidos conhecidos
+        if (/^(\d)\1+$/.test(cnpj)) return false;
+
+        // Validação do dígito verificador
+        let tamanho = cnpj.length - 2;
+        let numeros = cnpj.substring(0, tamanho);
+        let digitos = cnpj.substring(tamanho);
+        let soma = 0;
+        let pos = tamanho - 7;
+
+        for (let i = tamanho; i >= 1; i--) {
+            soma += parseInt(numeros.charAt(tamanho - i)) * pos--;
+            if (pos < 2) pos = 9;
+        }
+
+        let resultado = soma % 11 < 2 ? 0 : 11 - soma % 11;
+        if (resultado !== parseInt(digitos.charAt(0))) return false;
+
+        tamanho = tamanho + 1;
+        numeros = cnpj.substring(0, tamanho);
+        soma = 0;
+        pos = tamanho - 7;
+
+        for (let i = tamanho; i >= 1; i--) {
+            soma += parseInt(numeros.charAt(tamanho - i)) * pos--;
+            if (pos < 2) pos = 9;
+        }
+
+        resultado = soma % 11 < 2 ? 0 : 11 - soma % 11;
+        if (resultado !== parseInt(digitos.charAt(1))) return false;
+
+        return true;
+    }
+
+    const [cnpjError, setCnpjError] = useState<string | null>(null); // Estado para controlar o erro de CNPJ
+
+    const handleCNPJBlur = async () => {
+        if (!validaCNPJ(formData.cnpj)) {
+            setCnpjError('CNPJ inválido');
+        } else {
+            setCnpjError(null);
+            const dadosCNPJ = await buscarCNPJBrasilAPI(formData.cnpj);
+            if (dadosCNPJ) {
+                console.log("Dados do CNPJ:", dadosCNPJ);
+
+                if (formData.logradouro === '') {
+                    setFormData(prevState => ({
+                        ...prevState,
+                        logradouro: `${dadosCNPJ.descricao_tipo_de_logradouro} ${dadosCNPJ.logradouro}`
+                    }));
+                }
+
+                if (formData.cep === '') {
+                    setFormData(prevState => ({
+                        ...prevState,
+                        cep: dadosCNPJ.cep
+                    }));
+                }
+
+                if (formData.complemento === '') {
+                    setFormData(prevState => ({
+                        ...prevState,
+                        complemento: dadosCNPJ.complemento
+                    }));
+                }
+
+                if (formData.cnae === '') {
+                    setFormData(prevState => ({
+                        ...prevState,
+                        cnae: dadosCNPJ.cnae_fiscal
+                    }));
+                }
+
+                if (formData.telefone === '') {
+                    setFormData(prevState => ({
+                        ...prevState,
+                        telefone: dadosCNPJ.ddd_telefone_1
+                    }));
+                }
+
+                if (formData.email === '') {
+                    setFormData(prevState => ({
+                        ...prevState,
+                        email: dadosCNPJ.email
+                    }));
+                }
+
+                if (formData.razao_social === '') {
+                    setFormData(prevState => ({
+                        ...prevState,
+                        razao_social: dadosCNPJ.razao_social
+                    }));
+                }
+
+                if (formData.nome_fantasia === '') {
+                    setFormData(prevState => ({
+                        ...prevState,
+                        nome_fantasia: dadosCNPJ.nome_fantasia
+                    }));
+                }
+
+                if (formData.data_inicio_funcionamento === '') {
+                    setFormData(prevState => ({
+                        ...prevState,
+                        data_inicio_funcionamento: dadosCNPJ.data_inicio_atividade
+                    }));
+                }
+
+            }
+        }
+    };
+
+    const buscarCNPJBrasilAPI = async (cnpj: string) => {
+        const url = `https://brasilapi.com.br/api/cnpj/v1/${cnpj}`;
+
+        try {
+            const response = await axios.get(url);
+            return response.data; // Retorna os dados da API
+        } catch (error) {
+            console.error("Erro ao buscar CNPJ:", error);
+            return null; // Retorna null em caso de erro
+        }
     };
 
     const graus_risco = [
@@ -458,9 +600,9 @@ const FormularioEstabelecimentos: React.FC = () => {
         const inscricao_estadual = validaCampos(formData.inscricao_estadual, 'Inscrição Estadual', true);
         const inscricao_municipal = validaCampos(formData.inscricao_municipal, 'Inscrição Municipal', true);
         const logradouro = validaCampos(formData.logradouro, 'Logradouro', true);
-        const estado = validaCampos(formData.id_Estado, 'Estado', true);
-        const cidade = validaCampos(formData.id_Cidade, 'Cidade', true);
-        const bairro = validaCampos(formData.id_Bairro, 'Bairro', true);
+        const estado = validaCampos(formData.id_estado, 'Estado', true);
+        const cidade = validaCampos(formData.id_cidade, 'Cidade', true);
+        const bairro = validaCampos(formData.id_bairro, 'Bairro', true);
         const cep = validaCampos(formData.cep, 'CEP', true, 8);
         const telefone = validaCampos(formData.telefone, 'Telefone', true);
         const email = validaCampos(formData.email, 'E-mail', true);
@@ -598,30 +740,37 @@ const FormularioEstabelecimentos: React.FC = () => {
 
             <ContainerForm title="Informações Básicas">
                 <Row>
+                    <CampoTexto label="CNPJ (Apenas Números)" value={formData.cnpj} name="cnpj" tipo="text" className="col-md-3" onChange={handleChange} onBlur={
+                        handleCNPJBlur
+                    } >
+                        {cnpjError && <small style={{ color: 'red' }}>{cnpjError}</small>}
+                    </CampoTexto>
+
+                </Row>
+                <Row>
                     <CampoTexto label="Razão Social" value={formData.razao_social} name="razao_social" tipo="text" className="col-md-6" onChange={handleChange} />
                     <CampoTexto label="Nome Fantasia" value={formData.nome_fantasia} name="nome_fantasia" tipo="text" className="col-md-6" onChange={handleChange} />
                     {/* <CampoSelect label="Cidade" name="cidade" options={cidades} className="col-md-4" onChange={handleChange} /> */}
                 </Row>
                 <Row>
-                    <CampoTexto label="CNPJ" value={formData.cnpj} name="cnpj" tipo="text" className="col-md-3" onChange={handleChange} />
                     <CampoTexto label="CNAE" value={formData.cnae} name="cnae" tipo="text" className="col-md-3" onChange={handleChange} />
                     <CampoTexto label="Início Funcionamento" value={formData.data_inicio_funcionamento ? new Date(formData.data_inicio_funcionamento).toISOString().split('T')[0] : ''} name="data_inicio_funcionamento" tipo="date" className="col-md-3" onChange={handleChange} />
                     <CampoSelect label="Grau de Risco" value={formData.grau_risco} name="grau_risco" options={graus_risco} className="col-md-3" onChange={handleChange} />
+                    <CampoTexto label="Inscrição Estadual" name="inscricao_estadual" value={formData.inscricao_estadual} tipo="text" className="col-md-3" onChange={handleChange} />
                 </Row>
                 <Row>
-                    <CampoTexto label="Inscrição Estadual" name="inscricao_estadual" value={formData.inscricao_estadual} tipo="text" className="col-md-6" onChange={handleChange} />
-                    <CampoTexto label="Inscrição Municipal" name="inscricao_municipal" value={formData.inscricao_municipal} tipo="text" className="col-md-6" onChange={handleChange} />
+                    <CampoTexto label="Inscrição Municipal" name="inscricao_municipal" value={formData.inscricao_municipal} tipo="text" className="col-md-3" onChange={handleChange} />
                 </Row>
             </ContainerForm>
 
             <ContainerForm title="Endereço / Contato">
                 <Row>
                     <CampoTexto label="Logradouro" name="logradouro" value={formData.logradouro} tipo="text" className="col-md-6" onChange={handleChange} />
-                    <CampoSelect label="Estado" name="id_Estado" value={formData.id_Estado} options={Estados} className="col-md-3" onChange={handleChange} />
-                    <CampoSelect label="Cidade" name="id_Cidade" value={formData.id_Cidade} options={Cidades} className="col-md-3" onChange={handleChange} />
+                    <CampoSelect label="Estado" name="id_Estado" value={formData.id_estado} options={Estados} className="col-md-3" onChange={handleChange} />
+                    <CampoSelect label="Cidade" name="id_Cidade" value={formData.id_cidade} options={Cidades} className="col-md-3" onChange={handleChange} />
                 </Row>
                 <Row>
-                    <CampoSelect label="Bairro" name="id_Bairro" value={formData.id_Bairro} options={Bairros} className="col-md-3" onChange={handleChange} />
+                    <CampoSelect label="Bairro" name="id_Bairro" value={formData.id_bairro} options={Bairros} className="col-md-3" onChange={handleChange} />
                     <CampoTexto label="CEP" name="cep" value={formData.cep} tipo="text" className="col-md-3" onChange={handleChange} />
                     <CampoTexto label="Complemento" name="complemento" value={formData.complemento} tipo="text" className="col-md-3" onChange={handleChange} />
                 </Row>

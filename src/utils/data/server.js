@@ -16,7 +16,6 @@ const server = {
         login: '/auth/login',
         serie: '/Serie',
         inspecao: '/Inspecao',
-
     },
 };
 
