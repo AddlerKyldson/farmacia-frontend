@@ -45,6 +45,7 @@ const FormularioEstabelecimentos: React.FC = () => {
         inscricao_estadual: '',
         inscricao_municipal: '',
         logradouro: '',
+        numero: '',
         id_estado: '',
         id_cidade: '',
         id_bairro: '',
@@ -596,9 +597,6 @@ const FormularioEstabelecimentos: React.FC = () => {
         const cnpj = validaCampos(formData.cnpj, 'CNPJ', true, 14);
         const cnae = validaCampos(formData.cnae, 'CNAE', true);
         const data_inicio_funcionamento = validaCampos(formData.data_inicio_funcionamento, 'Data Início Funcionamento', true);
-        const grau_risco = validaCampos(formData.grau_risco, 'Grau de Risco', true);
-        const inscricao_estadual = validaCampos(formData.inscricao_estadual, 'Inscrição Estadual', true);
-        const inscricao_municipal = validaCampos(formData.inscricao_municipal, 'Inscrição Municipal', true);
         const logradouro = validaCampos(formData.logradouro, 'Logradouro', true);
         const estado = validaCampos(formData.id_estado, 'Estado', true);
         const cidade = validaCampos(formData.id_cidade, 'Cidade', true);
@@ -606,21 +604,12 @@ const FormularioEstabelecimentos: React.FC = () => {
         const cep = validaCampos(formData.cep, 'CEP', true, 8);
         const telefone = validaCampos(formData.telefone, 'Telefone', true);
         const email = validaCampos(formData.email, 'E-mail', true);
-        const protocolo_funcionamento = validaCampos(formData.protocolo_funcionamento, 'Protocolo de Funcionamento', true);
-        const passivo_alvara = validaCampos(formData.passivo_alvara_sanitario, 'Passivo de Alvará Sanitário?', true);
-        const n_alvara_sanitario = validaCampos(formData.n_alvara_sanitario, 'N° do Alvará Sanitário ou Protocolo', true);
-        const coleta_residuos = validaCampos(formData.coleta_residuos, 'Coleta de Resíduos', true);
-        const recebeu_autuacao = validaCampos(formData.autuacao_visa, 'Recebeu Autuação da Vigilância Sanitária?', true);
-        const forma_abastecimento = validaCampos(formData.forma_abastecimento, 'Forma de Abastecimento', true);
 
         if (razao_social.erro) mensagem_erro.push(razao_social.mensagem_erro);
         if (nome_fantasia.erro) mensagem_erro.push(nome_fantasia.mensagem_erro);
         if (cnpj.erro) mensagem_erro.push(cnpj.mensagem_erro);
         if (cnae.erro) mensagem_erro.push(cnae.mensagem_erro);
         if (data_inicio_funcionamento.erro) mensagem_erro.push(data_inicio_funcionamento.mensagem_erro);
-        if (grau_risco.erro) mensagem_erro.push(grau_risco.mensagem_erro);
-        if (inscricao_estadual.erro) mensagem_erro.push(inscricao_estadual.mensagem_erro);
-        if (inscricao_municipal.erro) mensagem_erro.push(inscricao_municipal.mensagem_erro);
         if (logradouro.erro) mensagem_erro.push(logradouro.mensagem_erro);
         if (estado.erro) mensagem_erro.push(estado.mensagem_erro);
         if (cidade.erro) mensagem_erro.push(cidade.mensagem_erro);
@@ -628,13 +617,6 @@ const FormularioEstabelecimentos: React.FC = () => {
         if (cep.erro) mensagem_erro.push(cep.mensagem_erro);
         if (telefone.erro) mensagem_erro.push(telefone.mensagem_erro);
         if (email.erro) mensagem_erro.push(email.mensagem_erro);
-        if (protocolo_funcionamento.erro) mensagem_erro.push(protocolo_funcionamento.mensagem_erro);
-        if (passivo_alvara.erro) mensagem_erro.push(passivo_alvara.mensagem_erro);
-        if (n_alvara_sanitario.erro) mensagem_erro.push(n_alvara_sanitario.mensagem_erro);
-        if (coleta_residuos.erro) mensagem_erro.push(coleta_residuos.mensagem_erro);
-        if (recebeu_autuacao.erro) mensagem_erro.push(recebeu_autuacao.mensagem_erro);
-        if (forma_abastecimento.erro) mensagem_erro.push(forma_abastecimento.mensagem_erro);
-
 
         if (mensagem_erro.length > 0) {
 
@@ -766,12 +748,13 @@ const FormularioEstabelecimentos: React.FC = () => {
             <ContainerForm title="Endereço / Contato">
                 <Row>
                     <CampoTexto label="Logradouro" name="logradouro" value={formData.logradouro} tipo="text" className="col-md-6" onChange={handleChange} />
-                    <CampoSelect label="Estado" name="id_Estado" value={formData.id_estado} options={Estados} className="col-md-3" onChange={handleChange} />
-                    <CampoSelect label="Cidade" name="id_Cidade" value={formData.id_cidade} options={Cidades} className="col-md-3" onChange={handleChange} />
+                    <CampoTexto label="Nº" name="numero" value={formData.numero} tipo="text" className="col-md-3" onChange={handleChange} />
+                    <CampoTexto label="CEP" name="cep" value={formData.cep} tipo="text" className="col-md-3" onChange={handleChange} />
                 </Row>
                 <Row>
+                    <CampoSelect label="Estado" name="id_Estado" value={formData.id_estado} options={Estados} className="col-md-3" onChange={handleChange} />
+                    <CampoSelect label="Cidade" name="id_Cidade" value={formData.id_cidade} options={Cidades} className="col-md-3" onChange={handleChange} />
                     <CampoSelect label="Bairro" name="id_Bairro" value={formData.id_bairro} options={Bairros} className="col-md-3" onChange={handleChange} />
-                    <CampoTexto label="CEP" name="cep" value={formData.cep} tipo="text" className="col-md-3" onChange={handleChange} />
                     <CampoTexto label="Complemento" name="complemento" value={formData.complemento} tipo="text" className="col-md-3" onChange={handleChange} />
                 </Row>
                 <Row>
