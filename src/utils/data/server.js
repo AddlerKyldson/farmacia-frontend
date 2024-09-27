@@ -1,6 +1,6 @@
 const server = {
-    /* url: 'http://localhost:5279/api', */
-    url: 'https://www.gerenciadorsaude.com.br/api',
+    url: 'http://localhost:5279/api',
+    /* url: 'https://www.gerenciadorsaude.com.br/api', */
     endpoints: {
         usuario: '/Usuario',
         estado: '/Estado',

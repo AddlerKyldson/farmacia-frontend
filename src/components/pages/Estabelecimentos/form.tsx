@@ -60,11 +60,13 @@ const FormularioEstabelecimentos: React.FC = () => {
         autuacao_visa: '',
         forma_abastecimento: '',
         id_tipo_estabelecimento: '',
+        id_serie: '',
         slug: '',
         estabelecimento_Responsavel_Legal: responsaveisLegais,
         estabelecimento_Responsavel_Tecnico: responsaveisTecnicos
     });
 
+    const [Series, setSeries] = useState<any[]>([]);
     const [Estados, setEstados] = useState<any[]>([]);
     const [Cidades, setCidades] = useState<any[]>([]);
     const [Bairros, setBairros] = useState<any[]>([]);
@@ -142,11 +144,11 @@ const FormularioEstabelecimentos: React.FC = () => {
 
                 loadCidades(response.data.id_estado);
                 loadBairros(response.data.id_cidade);
+                loadTiposEstabelecimentos(response.data.id_serie);
 
                 try {
                     setFormData(response.data);
-                    /* console.log("Dados:", response.data.estabelecimento_Responsavel_Legal);
-                    setResponsaveisLegais(response.data.estabelecimento_Responsavel_Legal.$values); */
+                    console.log("Dados:", response.data);
 
                 } catch (error) {
                     console.error("Erro:", error);
@@ -158,6 +160,7 @@ const FormularioEstabelecimentos: React.FC = () => {
         } else {
             setCidades([{ value: 0, label: 'Selecione o estado' }]);
             setBairros([{ value: 0, label: 'Selecione a cidade' }]);
+            setTipoEstabelecimento([{ value: 0, label: 'Selecione a série' }]);
         }
     };
 
@@ -166,7 +169,7 @@ const FormularioEstabelecimentos: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        console.log("FORMDATA atualizado:", formData);
+        //console.log("FORMDATA atualizado:", formData);
     }, [formData]);
 
     //Carrega Estados
@@ -189,6 +192,35 @@ const FormularioEstabelecimentos: React.FC = () => {
                 response.data.unshift({ value: 0, label: 'Selecione' });
 
                 setEstados(response.data);
+
+            } catch (error) {
+                console.error("Erro:", error);
+            }
+        };
+
+        fetchData();
+    }, []);
+
+    //Carrega Series
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+
+                const response = await axios.get(
+                    `${server.url}${server.endpoints.serie}`,
+                    {
+                        //parâmetros
+                    }
+                );
+
+                //ajustar array para que o campo value seja o id do estado e o campo label seja o nome do estado, e adiciona uma opção padrão com value 0 e label "Selecione"
+                response.data = response.data.$values.map((item: any) => {
+                    return { value: item.id, label: item.nome };
+                });
+
+                response.data.unshift({ value: 0, label: 'Selecione' });
+
+                setSeries(response.data);
 
             } catch (error) {
                 console.error("Erro:", error);
@@ -260,34 +292,39 @@ const FormularioEstabelecimentos: React.FC = () => {
         }
     }
 
-    //Carrega Tipos de estabelecimentos
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
+    const loadTiposEstabelecimentos = async (id: number) => {
 
-                const response = await axios.get(
-                    `${server.url}${server.endpoints.tipo_estabelecimento}`,
-                    {
-                        //parâmetros
-                    }
-                );
+        console.log("AQUI");
 
-                //ajustar array para que o campo value seja o id do estado e o campo label seja o nome do estado, e adiciona uma opção padrão com value 0 e label "Selecione"
-                response.data = response.data.dados.$values.map((item: any) => {
-                    return { value: item.id, label: item.nome };
-                });
+        try {
 
-                response.data.unshift({ value: 0, label: 'Selecione' });
+            const response = await axios.get(
+                `${server.url}${server.endpoints.tipo_estabelecimento}/Serie/${id}`,
+                {
+                    //parâmetros
+                }
+            );
 
-                setTipoEstabelecimento(response.data);
-
-            } catch (error) {
-                console.error("Erro:", error);
+            if (response.data.length === 0) {
+                setTipoEstabelecimento([{ value: 0, label: 'Nenhum tipo encontrado' }]);
+                return;
             }
-        };
 
-        fetchData();
-    }, []);
+            //ajustar array para que o campo value seja o id da serie e o campo label seja o nome da serie, e adiciona uma opção padrão com value 0 e label "Selecione"
+            response.data = response.data.$values.map((item: any) => {
+                return { value: item.id, label: item.nome };
+            });
+
+            response.data.unshift({ value: 0, label: 'Selecione' });
+
+
+            setTipoEstabelecimento(response.data);
+
+        } catch (error) {
+
+            console.error("Erro:", error);
+        }
+    }
 
     //configura exibição do Alert
     const [alert, setAlert] = useState({
@@ -314,6 +351,10 @@ const FormularioEstabelecimentos: React.FC = () => {
 
         if (name === 'id_Cidade') {
             loadBairros(parseInt(value));
+        }
+
+        if (name === 'id_serie') {
+            loadTiposEstabelecimentos(parseInt(value));
         }
 
         if (name === 'cnpj') {
@@ -776,6 +817,7 @@ const FormularioEstabelecimentos: React.FC = () => {
                     <CampoSelect label="Forma de Abastecimento" name="forma_abastecimento" value={formData.forma_abastecimento} options={forma_abastecimento} className="col-md-4" onChange={handleChange} />
                 </Row>
                 <Row>
+                    <CampoSelect label="Série" name="id_serie" value={formData.id_serie} options={Series} className="col-md-4" onChange={handleChange} />
                     <CampoSelect label="Tipo de Estabelecimento" name="id_tipo_estabelecimento" value={formData.id_tipo_estabelecimento} options={TipoEstabelecimento} className="col-md-4" onChange={handleChange} />
                 </Row>
             </ContainerForm>
