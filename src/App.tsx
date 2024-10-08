@@ -39,6 +39,8 @@ import LoginPage from "./components/pages/Login";
 import PrivateRoute from "./routes/PrivateRoute";
 import { AuthProvider } from './context/AuthContext';
 import Dashboard from "./components/pages/Dashboard";
+import FormularioDenuncia from "./components/pages/Denuncias/form";
+import Denuncias from "./components/pages/Denuncias";
 
 const App: React.FC = () => {
     return (
@@ -51,6 +53,9 @@ const App: React.FC = () => {
                     <Route path="/estabelecimentos" element={<PrivateRoute><Estabelecimentos /></PrivateRoute>} />
                     <Route path="/estabelecimentos/form" element={<PrivateRoute><FormularioEstabelecimentos /></PrivateRoute>} />
                     <Route path="/estabelecimentos/form/:id" element={<PrivateRoute><FormularioEstabelecimentos /></PrivateRoute>} />
+                    <Route path="/denuncias" element={<PrivateRoute><Denuncias /></PrivateRoute>} />
+                    <Route path="/denuncias/form" element={<PrivateRoute><FormularioDenuncia /></PrivateRoute>} />
+                    <Route path="/denuncias/form/:id" element={<PrivateRoute><FormularioDenuncia /></PrivateRoute>} />
                     <Route path="/bairros" element={<PrivateRoute><Bairros /></PrivateRoute>} />
                     <Route path="/bairros/form" element={<PrivateRoute><FormBairros /></PrivateRoute>} />
                     <Route path="/bairros/form/:id" element={<PrivateRoute><FormBairros /></PrivateRoute>} />

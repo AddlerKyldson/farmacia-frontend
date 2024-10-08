@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { MenuContainer, MenuItem, MenuLink, MenuUl, MobileMenuButton, Overlay, SubMenu, SubMenuItem } from "./styles";
 import { useAuth } from "../../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { ArrowBack, ArrowForward, ArrowLeft, ArrowRight, Build, BusinessCenter, Category, Checklist, ContentPasteSearch, Coronavirus, FindInPage, Handshake, HealthAndSafety, Home, HomeMini, ManageAccounts, Medication, MonitorWeight, PrecisionManufacturing, RemoveCircle, Storefront, Troubleshoot, } from '@mui/icons-material';
+import { ArrowBack, ArrowForward, ArrowLeft, ArrowRight, Build, BusinessCenter, Category, Checklist, ContentPasteSearch, Coronavirus, FindInPage, Handshake, HealthAndSafety, Home, HomeMini, ManageAccounts, Medication, MonitorWeight, PrecisionManufacturing, RemoveCircle, Storefront, Troubleshoot, Warning, } from '@mui/icons-material';
 import { useMenu } from "./MenuContext";
 
 const Menu: React.FC = () => {
@@ -85,6 +85,12 @@ const Menu: React.FC = () => {
                                         <MenuLink href="/inspecoes">
                                             <Troubleshoot className="me-1" />
                                             {"Inspeções"}
+                                        </MenuLink>
+                                    </SubMenuItem>
+                                    <SubMenuItem>
+                                        <MenuLink href="/denuncias">
+                                            <Warning className="me-1" />
+                                            {"Denúncias"}
                                         </MenuLink>
                                     </SubMenuItem>
                                 </SubMenu>

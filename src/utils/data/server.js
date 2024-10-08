@@ -9,6 +9,7 @@ const server = {
         bairro: '/Bairro',
         unidade_saude: '/Unidade_Saude',
         estabelecimento: '/Estabelecimento',
+        denuncia: '/Denuncia',
         tipo_estabelecimento: '/Tipo_Estabelecimento',
         medicamento: '/Medicamento',
         medicamento_movimentacao: '/Medicamento_Movimentacao',
