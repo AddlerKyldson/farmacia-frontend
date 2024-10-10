@@ -312,7 +312,7 @@ const FormularioEstabelecimentos: React.FC = () => {
             [name]: value
         }));
 
-        if (name === 'id_Estado') {
+        if (name === 'id_estado') {
             loadCidades(parseInt(value));
         }
 
