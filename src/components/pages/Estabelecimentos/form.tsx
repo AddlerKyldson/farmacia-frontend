@@ -769,7 +769,7 @@ const FormularioEstabelecimentos: React.FC = () => {
                 <Row>
                     <CampoSelect label="Estado" name="id_estado" value={formData.id_estado} options={Estados} className="col-md-3" onChange={handleChange} />
                     <CampoSelect label="Cidade" name="id_cidade" value={formData.id_cidade} options={Cidades} className="col-md-3" onChange={handleChange} />
-                    <CampoTexto label="Bairro" name="Bairro" value={formData.bairro} tipo="text" className="col-md-3" onChange={handleChange} />
+                    <CampoTexto label="Bairro" name="bairro" value={formData.bairro} tipo="text" className="col-md-3" onChange={handleChange} />
                     <CampoTexto label="Complemento" name="complemento" value={formData.complemento} tipo="text" className="col-md-3" onChange={handleChange} />
                 </Row>
                 <Row>
