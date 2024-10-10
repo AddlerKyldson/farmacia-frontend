@@ -24,7 +24,7 @@ const FormularioDenuncia: React.FC = () => {
         data_Recebimento: '',
         id_Estado: '',
         id_Cidade: '',
-        id_Bairro: '',
+        bairro: '',
         tipo_Denuncia: '0',
         origem_Denuncia: '0',
         forma_Recebimento: '0',
@@ -41,7 +41,6 @@ const FormularioDenuncia: React.FC = () => {
 
     const [Estados, setEstados] = useState<any[]>([]);
     const [Cidades, setCidades] = useState<any[]>([]);
-    const [Bairros, setBairros] = useState<any[]>([]);
 
 
     //Verifica ID
@@ -56,7 +55,6 @@ const FormularioDenuncia: React.FC = () => {
             axios.get(`${server.url}${server.endpoints.denuncia}/${id}`).then(response => {
 
                 loadCidades(response.data.id_Estado);
-                loadBairros(response.data.id_Cidade);
 
                 const data = response.data;
 
@@ -87,7 +85,6 @@ const FormularioDenuncia: React.FC = () => {
             });
         } else {
             setCidades([{ value: 0, label: 'Selecione o estado' }]);
-            setBairros([{ value: 0, label: 'Selecione a cidade' }]);
 
             //Ocultar divs .se_atendeu e .se_nao_atendeu
             document.querySelector('.se_atendeu')?.classList.add('d-none');
@@ -176,37 +173,6 @@ const FormularioDenuncia: React.FC = () => {
         }
     }
 
-    const loadBairros = async (id: number) => {
-
-        try {
-
-            const response = await axios.get(
-                `${server.url}${server.endpoints.bairro}/Cidade/${id}`,
-                {
-                    //parâmetros
-                }
-            );
-
-            if (response.data.length === 0) {
-                setCidades([{ value: 0, label: 'Nenhum bairro encontrado' }]);
-                return;
-            }
-
-            //ajustar array para que o campo value seja o id do estado e o campo label seja o nome do estado, e adiciona uma opção padrão com value 0 e label "Selecione"
-            response.data = response.data.$values.map((item: any) => {
-                return { value: item.id, label: item.nome };
-            });
-
-            response.data.unshift({ value: 0, label: 'Selecione' });
-
-            setBairros(response.data);
-
-        } catch (error) {
-
-            console.error("Erro:", error);
-        }
-    }
-
     //configura exibição do Alert
     const [alert, setAlert] = useState({
         show: false,
@@ -227,11 +193,6 @@ const FormularioDenuncia: React.FC = () => {
 
         if (name === 'id_Estado') {
             loadCidades(parseInt(value));
-            loadBairros(parseInt(value));
-        }
-
-        if (name === 'id_Cidade') {
-            loadBairros(parseInt(value));
         }
 
         if (name === 'atendida') {
@@ -480,7 +441,7 @@ const FormularioDenuncia: React.FC = () => {
                 <Row>
                     <CampoSelect label="Estado" name="id_Estado" value={formData.id_Estado} options={Estados} className="col-md-3" onChange={handleChange} />
                     <CampoSelect label="Cidade" name="id_Cidade" value={formData.id_Cidade} options={Cidades} className="col-md-3" onChange={handleChange} />
-                    <CampoSelect label="Bairro" name="id_Bairro" value={formData.id_Bairro} options={Bairros} className="col-md-3" onChange={handleChange} />
+                    <CampoTexto label="Bairro" value={formData.bairro} name="bairro" tipo="text" className="col-md-3" onChange={handleChange} />
                 </Row>
                 <Row>
                     <CampoSelect label="Tipo de Denúncia" name="tipo_Denuncia" value={formData.tipo_Denuncia} options={tipo_denuncia} className="col-md-3" onChange={handleChange} />

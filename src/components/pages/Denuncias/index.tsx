@@ -187,7 +187,7 @@ const Denuncias: React.FC = () => {
 
             <Breadcrumb paginas={[{ texto: "Home", href: '/' }, { texto: "Denuncias" }]} />
 
-            <Titulo titulo="Denuncias" botao={['1', '2', '8'].includes(user_type) ? { texto: "Cadastrar", href: "/denuncias/form" } : undefined} />
+            <Titulo titulo="Denuncias" botao={{ texto: "Cadastrar", href: "/denuncias/form" }} />
 
             <Filtro title="Filtrar">
                 <div className="row">
@@ -220,7 +220,7 @@ const Denuncias: React.FC = () => {
                             <tr key={dado.id}>
                                 <td>{dado.id}</td>
                                 <td>{dado.descricao}</td>
-                                <td>{dado.bairro.nome}</td>
+                                <td>{dado.bairro}</td>
                                 <td>{(dado.atendida == 1 ? 'Sim' : 'Não')}</td>
                                 <td>{
                                     formatDate(new Date(dado.data_Recebimento).toISOString().split('T')[0])

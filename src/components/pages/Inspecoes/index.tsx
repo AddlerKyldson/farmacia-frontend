@@ -176,7 +176,7 @@ const Inspecoes: React.FC = () => {
 
             <Breadcrumb paginas={[{ texto: "Home", href: '/' }, { texto: "Inspecoes" }]} />
 
-            <Titulo titulo="Inspecoes" botao={['1', '2', '8'].includes(user_type) ? { texto: "Cadastrar", href: "/inspecoes/form" } : undefined} />
+            <Titulo titulo="Inspecoes" botao={{ texto: "Cadastrar", href: "/inspecoes/form" }} />
 
             <Filtro title="Filtrar">
                 <div className="row">

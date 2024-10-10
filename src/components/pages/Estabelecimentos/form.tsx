@@ -11,6 +11,7 @@ import Alert from "../../other/modal/alert";
 import axios from "axios";
 import server from "../../../utils/data/server";
 import BotaoExcluir from "../../other/form/botaoExcluir";
+import CampoAreaTexto from "../../other/form/campoAreaTexto";
 
 interface ResponsaveisLegais {
     nome_responsavel: string;
@@ -41,27 +42,28 @@ const FormularioEstabelecimentos: React.FC = () => {
         cnpj: '',
         cnae: '',
         data_inicio_funcionamento: '',
-        grau_risco: '',
+        grau_risco: '0',
         inscricao_estadual: '',
         inscricao_municipal: '',
         logradouro: '',
         numero: '',
         id_estado: '',
         id_cidade: '',
-        id_bairro: '',
+        bairro: '',
         cep: '',
         complemento: '',
         telefone: '',
         email: '',
         protocolo_funcionamento: '',
-        passivo_alvara_sanitario: '',
+        passivo_alvara_sanitario: '0',
         n_alvara_sanitario: '',
-        coleta_residuos: '',
-        autuacao_visa: '',
-        forma_abastecimento: '',
-        id_tipo_estabelecimento: '',
-        id_serie: '',
+        coleta_residuos: '0',
+        autuacao_visa: '0',
+        forma_abastecimento: '0',
+        id_tipo_estabelecimento: '0',
+        id_serie: '0',
         slug: '',
+        observacoes: '',
         estabelecimento_Responsavel_Legal: responsaveisLegais,
         estabelecimento_Responsavel_Tecnico: responsaveisTecnicos
     });
@@ -69,7 +71,6 @@ const FormularioEstabelecimentos: React.FC = () => {
     const [Series, setSeries] = useState<any[]>([]);
     const [Estados, setEstados] = useState<any[]>([]);
     const [Cidades, setCidades] = useState<any[]>([]);
-    const [Bairros, setBairros] = useState<any[]>([]);
     const [TipoEstabelecimento, setTipoEstabelecimento] = useState<any[]>([]);
 
     //Add Responsável Legal
@@ -143,7 +144,6 @@ const FormularioEstabelecimentos: React.FC = () => {
             axios.get(`${server.url}${server.endpoints.estabelecimento}/${id}`).then(response => {
 
                 loadCidades(response.data.id_estado);
-                loadBairros(response.data.id_cidade);
                 loadTiposEstabelecimentos(response.data.id_serie);
 
                 try {
@@ -159,7 +159,6 @@ const FormularioEstabelecimentos: React.FC = () => {
             });
         } else {
             setCidades([{ value: 0, label: 'Selecione o estado' }]);
-            setBairros([{ value: 0, label: 'Selecione a cidade' }]);
             setTipoEstabelecimento([{ value: 0, label: 'Selecione a série' }]);
         }
     };
@@ -261,37 +260,6 @@ const FormularioEstabelecimentos: React.FC = () => {
         }
     }
 
-    const loadBairros = async (id: number) => {
-
-        try {
-
-            const response = await axios.get(
-                `${server.url}${server.endpoints.bairro}/Cidade/${id}`,
-                {
-                    //parâmetros
-                }
-            );
-
-            if (response.data.length === 0) {
-                setCidades([{ value: 0, label: 'Nenhum bairro encontrado' }]);
-                return;
-            }
-
-            //ajustar array para que o campo value seja o id do estado e o campo label seja o nome do estado, e adiciona uma opção padrão com value 0 e label "Selecione"
-            response.data = response.data.$values.map((item: any) => {
-                return { value: item.id, label: item.nome };
-            });
-
-            response.data.unshift({ value: 0, label: 'Selecione' });
-
-            setBairros(response.data);
-
-        } catch (error) {
-
-            console.error("Erro:", error);
-        }
-    }
-
     const loadTiposEstabelecimentos = async (id: number) => {
 
         console.log("AQUI");
@@ -336,7 +304,7 @@ const FormularioEstabelecimentos: React.FC = () => {
         onClose: () => { }
     });
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
 
         setFormData(prevState => ({
@@ -346,11 +314,6 @@ const FormularioEstabelecimentos: React.FC = () => {
 
         if (name === 'id_Estado') {
             loadCidades(parseInt(value));
-            loadBairros(parseInt(value));
-        }
-
-        if (name === 'id_Cidade') {
-            loadBairros(parseInt(value));
         }
 
         if (name === 'id_serie') {
@@ -446,7 +409,7 @@ const FormularioEstabelecimentos: React.FC = () => {
                 if (formData.cnae === '') {
                     setFormData(prevState => ({
                         ...prevState,
-                        cnae: dadosCNPJ.cnae_fiscal
+                        cnae: `${dadosCNPJ.cnae_fiscal}`
                     }));
                 }
 
@@ -567,7 +530,12 @@ const FormularioEstabelecimentos: React.FC = () => {
     }
 
     const handleChangeResponsavelLegal = (e: any, index: number) => {
-        const { name, value } = e.target;
+        var { name, value } = e.target;
+
+        if (name === 'cpf') {
+            // Se o campo for CPF, processa apenas números
+            value = handleApenasNumeros(e);
+        }
 
         const newValue = value;
 
@@ -588,8 +556,20 @@ const FormularioEstabelecimentos: React.FC = () => {
 
     };
 
+    const handleApenasNumeros = (e: any) => {
+        // Remove qualquer caractere que não seja número
+        const { value } = e.target;
+        const apenasNumeros = value.replace(/\D/g, '');
+        return apenasNumeros;
+    };
+
     const handleChangeResponsavelTecnico = (e: any, index: number) => {
-        const { name, value } = e.target;
+        var { name, value } = e.target;
+
+        if (name === 'cpf') {
+            // Se o campo for CPF, processa apenas números
+            value = handleApenasNumeros(e);
+        }
 
         const newValue = value;
 
@@ -641,23 +621,17 @@ const FormularioEstabelecimentos: React.FC = () => {
         const logradouro = validaCampos(formData.logradouro, 'Logradouro', true);
         const estado = validaCampos(formData.id_estado, 'Estado', true);
         const cidade = validaCampos(formData.id_cidade, 'Cidade', true);
-        const bairro = validaCampos(formData.id_bairro, 'Bairro', true);
+        const bairro = validaCampos(formData.bairro, 'Bairro', true);
         const cep = validaCampos(formData.cep, 'CEP', true, 8);
         const telefone = validaCampos(formData.telefone, 'Telefone', true);
         const email = validaCampos(formData.email, 'E-mail', true);
 
         if (razao_social.erro) mensagem_erro.push(razao_social.mensagem_erro);
-        if (nome_fantasia.erro) mensagem_erro.push(nome_fantasia.mensagem_erro);
         if (cnpj.erro) mensagem_erro.push(cnpj.mensagem_erro);
-        if (cnae.erro) mensagem_erro.push(cnae.mensagem_erro);
-        if (data_inicio_funcionamento.erro) mensagem_erro.push(data_inicio_funcionamento.mensagem_erro);
         if (logradouro.erro) mensagem_erro.push(logradouro.mensagem_erro);
         if (estado.erro) mensagem_erro.push(estado.mensagem_erro);
         if (cidade.erro) mensagem_erro.push(cidade.mensagem_erro);
         if (bairro.erro) mensagem_erro.push(bairro.mensagem_erro);
-        if (cep.erro) mensagem_erro.push(cep.mensagem_erro);
-        if (telefone.erro) mensagem_erro.push(telefone.mensagem_erro);
-        if (email.erro) mensagem_erro.push(email.mensagem_erro);
 
         if (mensagem_erro.length > 0) {
 
@@ -793,9 +767,9 @@ const FormularioEstabelecimentos: React.FC = () => {
                     <CampoTexto label="CEP" name="cep" value={formData.cep} tipo="text" className="col-md-3" onChange={handleChange} />
                 </Row>
                 <Row>
-                    <CampoSelect label="Estado" name="id_Estado" value={formData.id_estado} options={Estados} className="col-md-3" onChange={handleChange} />
-                    <CampoSelect label="Cidade" name="id_Cidade" value={formData.id_cidade} options={Cidades} className="col-md-3" onChange={handleChange} />
-                    <CampoSelect label="Bairro" name="id_Bairro" value={formData.id_bairro} options={Bairros} className="col-md-3" onChange={handleChange} />
+                    <CampoSelect label="Estado" name="id_estado" value={formData.id_estado} options={Estados} className="col-md-3" onChange={handleChange} />
+                    <CampoSelect label="Cidade" name="id_cidade" value={formData.id_cidade} options={Cidades} className="col-md-3" onChange={handleChange} />
+                    <CampoTexto label="Bairro" name="Bairro" value={formData.bairro} tipo="text" className="col-md-3" onChange={handleChange} />
                     <CampoTexto label="Complemento" name="complemento" value={formData.complemento} tipo="text" className="col-md-3" onChange={handleChange} />
                 </Row>
                 <Row>
@@ -820,6 +794,10 @@ const FormularioEstabelecimentos: React.FC = () => {
                     <CampoSelect label="Série" name="id_serie" value={formData.id_serie} options={Series} className="col-md-4" onChange={handleChange} />
                     <CampoSelect label="Tipo de Estabelecimento" name="id_tipo_estabelecimento" value={formData.id_tipo_estabelecimento} options={TipoEstabelecimento} className="col-md-4" onChange={handleChange} />
                 </Row>
+            </ContainerForm>
+
+            <ContainerForm title="Observações">
+                <CampoAreaTexto label="Observações" name="observacoes" value={formData.observacoes} onChange={handleChange} />
             </ContainerForm>
 
             {!(Id > 0) && (
