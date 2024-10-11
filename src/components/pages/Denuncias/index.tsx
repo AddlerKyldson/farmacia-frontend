@@ -178,6 +178,19 @@ const Denuncias: React.FC = () => {
         return `${day}/${month}/${year}`;
     };
 
+    function verificarAtendimento(atendida: any) {
+        switch (atendida) {
+            case 1:
+                return "Sim";
+            case 2:
+                return "Não";
+            case 3:
+                return "Encaminhada";
+            default:
+                return "Não informado";
+        }
+    }
+
     return (
 
 
@@ -221,7 +234,9 @@ const Denuncias: React.FC = () => {
                                 <td>{dado.id}</td>
                                 <td>{dado.descricao}</td>
                                 <td>{dado.bairro}</td>
-                                <td>{(dado.atendida == 1 ? 'Sim' : 'Não')}</td>
+                                <td>{
+                                    verificarAtendimento(dado.atendida)
+                                }</td>
                                 <td>{
                                     formatDate(new Date(dado.data_Recebimento).toISOString().split('T')[0])
                                 }</td>

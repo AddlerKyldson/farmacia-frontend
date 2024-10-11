@@ -32,7 +32,9 @@ const FormularioDenuncia: React.FC = () => {
         escolaridade: '0',
         atendida: '0',
         orgao_Atendimento: '0',
+        orgao_Encaminhamento: '0',
         data_Atendimento: null,
+        data_Encaminhamento: null,
         motivo_Nao_Atendimento: '0',
         texto_Denuncia: '',
         status: 1, // default value
@@ -60,16 +62,29 @@ const FormularioDenuncia: React.FC = () => {
 
                 data.Id_Usuario_Alteracao = user ? user.id : '0';
 
-                if(data.atendida === 1){
+                if (data.atendida === 1) {
                     //Exibir div .se_atendeu
                     document.querySelector('.se_atendeu')?.classList.remove('d-none');
                     //Ocultar div .se_nao_atendeu
                     document.querySelector('.se_nao_atendeu')?.classList.add('d-none');
-                } else {
+                    //ocultar div .se_encaminhada
+                    document.querySelector('.se_encaminhada')?.classList.add('d-none');
+
+                } else if (data.atendida === 3) {
+                    //Ocultar div .se_atendeu
+                    document.querySelector('.se_atendeu')?.classList.add('d-none');
+                    //Exibir div .se_nao_atendeu
+                    document.querySelector('.se_nao_atendeu')?.classList.add('d-none');
+                    //ocultar div .se_encaminhada
+                    document.querySelector('.se_encaminhada')?.classList.remove('d-none');
+                }
+                else {
                     //Ocultar div .se_atendeu
                     document.querySelector('.se_atendeu')?.classList.add('d-none');
                     //Exibir div .se_nao_atendeu
                     document.querySelector('.se_nao_atendeu')?.classList.remove('d-none');
+                    //ocultar div .se_encaminhada
+                    document.querySelector('.se_encaminhada')?.classList.add('d-none');
                 }
 
                 try {
@@ -89,6 +104,7 @@ const FormularioDenuncia: React.FC = () => {
             //Ocultar divs .se_atendeu e .se_nao_atendeu
             document.querySelector('.se_atendeu')?.classList.add('d-none');
             document.querySelector('.se_nao_atendeu')?.classList.add('d-none');
+            document.querySelector('.se_encaminhada')?.classList.add('d-none');
 
         }
     };
@@ -201,11 +217,22 @@ const FormularioDenuncia: React.FC = () => {
                 document.querySelector('.se_atendeu')?.classList.remove('d-none');
                 //Ocultar div .se_nao_atendeu
                 document.querySelector('.se_nao_atendeu')?.classList.add('d-none');
+                //ocultar div .se_encaminhada
+                document.querySelector('.se_encaminhada')?.classList.add('d-none');
+            } else if (value === '3') {
+                //Ocultar div .se_atendeu
+                document.querySelector('.se_atendeu')?.classList.add('d-none');
+                //Exibir div .se_nao_atendeu
+                document.querySelector('.se_nao_atendeu')?.classList.add('d-none');
+                //ocultar div .se_encaminhada
+                document.querySelector('.se_encaminhada')?.classList.remove('d-none');
             } else {
                 //Ocultar div .se_atendeu
                 document.querySelector('.se_atendeu')?.classList.add('d-none');
                 //Exibir div .se_nao_atendeu
                 document.querySelector('.se_nao_atendeu')?.classList.remove('d-none');
+                //ocultar div .se_encaminhada
+                document.querySelector('.se_encaminhada')?.classList.add('d-none');
             }
         }
 
@@ -274,6 +301,20 @@ const FormularioDenuncia: React.FC = () => {
         { value: "10", label: "Vigilância Sanitária" },
     ];
 
+    const setor_encaminhamento_denuncia = [
+        { value: "0", label: "Selecione" },
+        { value: "1", label: "Setor de Zoonose" },
+        { value: "2", label: "Setor de Endemias" },
+        { value: "3", label: "Secretaria Municipal de Meio Ambiente e Urbanismo" },
+        { value: "4", label: "Secretaria Municipal de Obras e Serviços Urbanos" },
+        { value: "5", label: "Secretaria Municipal de Desenvolvimento Rural e Pesca" },
+        { value: "6", label: "SUVISA" },
+        { value: "7", label: "Polícia" },
+        { value: "8", label: "Ministério Público" },
+        { value: "9", label: "Ministério Público do Trabalho" },
+        { value: "10", label: "Vigilância Sanitária" },
+    ];
+
     const motivo_nao_atendimento = [
         { value: "0", label: "Selecione" },
         { value: "1", label: "Insegurança" },
@@ -286,7 +327,8 @@ const FormularioDenuncia: React.FC = () => {
     const sim_nao = [
         { value: "0", label: "Selecione" },
         { value: "1", label: "Sim" },
-        { value: "2", label: "Não" }
+        { value: "2", label: "Não" },
+        { value: "3", label: "Encaminhada" }
     ];
 
     function validaCampos(value = '', nome_campo = '', obrigatorio = false, tamanho = 0) {
@@ -455,7 +497,9 @@ const FormularioDenuncia: React.FC = () => {
             </ContainerForm>
 
             <ContainerForm title="Informações do denunciante">
-                <CampoSelect label="Nível de ensino" name="escolaridade" value={formData.escolaridade} options={escolaridade} className="col-md-3" onChange={handleChange} />
+                <Row>
+                    <CampoSelect label="Nível de ensino" name="escolaridade" value={formData.escolaridade} options={escolaridade} className="col-md-3" onChange={handleChange} />
+                </Row>
             </ContainerForm>
 
             <ContainerForm title="Desfecho">
@@ -465,6 +509,10 @@ const FormularioDenuncia: React.FC = () => {
                 <Row className="se_atendeu">
                     <CampoSelect label="Setor que atendeu" name="orgao_Atendimento" value={formData.orgao_Atendimento} options={setor_atendimento_denuncia} className="col-md-6" onChange={handleChange} />
                     <CampoTexto label="Data do Atendimento" name="data_Atendimento" value={formData.data_Atendimento ? new Date(formData.data_Atendimento).toISOString().split('T')[0] : ''} tipo="date" className="col-md-3" onChange={handleChange} />
+                </Row>
+                <Row className="se_encaminhada">
+                    <CampoSelect label="Encaminhada para" name="orgao_Encaminhamento" value={formData.orgao_Encaminhamento} options={setor_encaminhamento_denuncia} className="col-md-6" onChange={handleChange} />
+                    <CampoTexto label="Data do encaminhamento" name="data_Encaminhamento" value={formData.data_Encaminhamento ? new Date(formData.data_Encaminhamento).toISOString().split('T')[0] : ''} tipo="date" className="col-md-3" onChange={handleChange} />
                 </Row>
                 <Row className="se_nao_atendeu">
                     <CampoSelect label="Motivo do não atendimento" name="motivo_Nao_Atendimento" value={formData.motivo_Nao_Atendimento} options={motivo_nao_atendimento} className="col-md-6" onChange={handleChange} />
