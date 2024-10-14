@@ -143,7 +143,7 @@ const FormularioDenuncia: React.FC = () => {
 
                 //ajustar array para que o campo value seja o id do estado e o campo label seja o nome do estado, e adiciona uma opção padrão com value 0 e label "Selecione"
                 response.data = response.data.$values.map((item: any) => {
-                    return { value: item.id, label: item.nome };
+                    return { value: item.sigla, label: item.nome };
                 });
 
                 response.data.unshift({ value: 0, label: 'Selecione' });
@@ -158,7 +158,7 @@ const FormularioDenuncia: React.FC = () => {
         fetchData();
     }, []);
 
-    const loadCidades = async (id: number) => {
+    const loadCidades = async (id: string) => {
 
         try {
 
@@ -208,7 +208,7 @@ const FormularioDenuncia: React.FC = () => {
         }));
 
         if (name === 'id_Estado') {
-            loadCidades(parseInt(value));
+            loadCidades(value);
         }
 
         if (name === 'atendida') {

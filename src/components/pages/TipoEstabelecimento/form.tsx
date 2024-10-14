@@ -16,6 +16,10 @@ const FormTipoEstabelecimento: React.FC = () => {
     const [formData, setFormData] = useState({
         nome: '',
         id_Serie: '',
+        cnae: '',
+        grau_Risco: '0',
+        passivo_Alvara_Sanitario: '0',
+        passivo_Analise_Projeto: '0',
         slug: '',
     });
 
@@ -42,6 +46,8 @@ const FormTipoEstabelecimento: React.FC = () => {
             setId(parseInt(id ? id : '0'));
             //buscar os dados do estado
             axios.get(`${server.url}${server.endpoints.tipo_estabelecimento}/${id}`).then(response => {
+
+                console.log("Dados:", response.data);
 
                 setFormData(response.data);
 
@@ -223,6 +229,26 @@ const FormTipoEstabelecimento: React.FC = () => {
         }
     }
 
+    const graus_risco = [
+        { value: "0", label: "Selecione um grau" },
+        { value: "1", label: "Baixo" },
+        { value: "2", label: "Médio" },
+        { value: "3", label: "Alto" }
+    ];
+
+    const alvara = [
+        { value: "0", label: "Selecione" },
+        { value: "1", label: "Exigência de Alvará Sanitário" },
+        { value: "2", label: "Alvará sem inspeção prévia" },
+        { value: "3", label: "Dispensado de Alvará Sanitário" },
+    ];
+
+    const analise_projeto = [
+        { value: "0", label: "Selecione" },
+        { value: "1", label: "Exigência de Análise de Projeto" },
+        { value: "2", label: "Dispensado de Análise de Projeto" },
+    ]
+
     return (
         <Layout>
 
@@ -234,6 +260,16 @@ const FormTipoEstabelecimento: React.FC = () => {
                 <Row>
                     <CampoTexto label="Nome" name="nome" value={formData.nome} tipo="text" className="col-md-8" onChange={handleChange} />
                     <CampoSelect label="Série" name="id_Serie" value={formData.id_Serie} options={Series} className="col-md-4" onChange={handleChange} />
+                </Row>
+
+                <Row>
+                    <CampoTexto label="CNAE" name="cnae" value={formData.cnae} tipo="text" className="col-md-4" onChange={handleChange} />
+                    <CampoSelect label="Grau de Risco" name="grau_Risco" value={formData.grau_Risco} options={graus_risco} className="col-md-4" onChange={handleChange} />
+                    <CampoSelect label="Passivo Alvará Sanitário" name="passivo_Alvara_Sanitario" value={formData.passivo_Alvara_Sanitario} options={alvara} className="col-md-4" onChange={handleChange} />
+                </Row>
+
+                <Row>
+                    <CampoSelect label="Passivo Análise de Projeto" name="passivo_Analise_Projeto" value={formData.passivo_Analise_Projeto} options={analise_projeto} className="col-md-4" onChange={handleChange} />
                 </Row>
 
                 <Row className="justify-content-end">

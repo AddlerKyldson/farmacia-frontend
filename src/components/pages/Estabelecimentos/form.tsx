@@ -35,12 +35,18 @@ const FormularioEstabelecimentos: React.FC = () => {
 
     const [responsaveisLegais, setResponsaveisLegais] = useState<ResponsaveisLegais[]>([]);
     const [responsaveisTecnicos, setResponsaveisTecnicos] = useState<ResponsaveisTecnicos[]>([]);
+    const [cnae_encontrado, setCnaeEncontrado] = useState(false);
+    const [maior_grau_risco, setMaiorGrauRisco] = useState(0);
+    const [menor_passivo_analise_projeto, setMenorPassivoAnaliseProjeto] = useState(0);
+    const [menor_passivo_alvara_sanitario, setMenorPassivoAlvaraSanitario] = useState(0);
 
     const [formData, setFormData] = useState({
         razao_social: '',
         nome_fantasia: '',
         cnpj: '',
         cnae: '',
+        cnae_secundario: '',
+        passivo_analise_projeto: '0',
         data_inicio_funcionamento: '',
         grau_risco: '0',
         inscricao_estadual: '',
@@ -183,9 +189,11 @@ const FormularioEstabelecimentos: React.FC = () => {
                     }
                 );
 
+                console.log("Estados:", response.data);
+
                 //ajustar array para que o campo value seja o id do estado e o campo label seja o nome do estado, e adiciona uma opção padrão com value 0 e label "Selecione"
                 response.data = response.data.$values.map((item: any) => {
-                    return { value: item.id, label: item.nome };
+                    return { value: item.sigla, label: item.nome };
                 });
 
                 response.data.unshift({ value: 0, label: 'Selecione' });
@@ -229,12 +237,12 @@ const FormularioEstabelecimentos: React.FC = () => {
         fetchData();
     }, []);
 
-    const loadCidades = async (id: number) => {
+    const loadCidades = async (sigla: string) => {
 
         try {
 
             const response = await axios.get(
-                `${server.url}${server.endpoints.cidade}/Estado/${id}`,
+                `${server.url}${server.endpoints.cidade}/Estado/${sigla}`,
                 {
                     //parâmetros
                 }
@@ -245,9 +253,11 @@ const FormularioEstabelecimentos: React.FC = () => {
                 return;
             }
 
+            console.log("Cidades:", response.data);
+
             //ajustar array para que o campo value seja o id do estado e o campo label seja o nome do estado, e adiciona uma opção padrão com value 0 e label "Selecione"
             response.data = response.data.$values.map((item: any) => {
-                return { value: item.id, label: item.nome };
+                return { value: item.codigo_IBGE, label: item.nome };
             });
 
             response.data.unshift({ value: 0, label: 'Selecione' });
@@ -280,7 +290,7 @@ const FormularioEstabelecimentos: React.FC = () => {
 
             //ajustar array para que o campo value seja o id da serie e o campo label seja o nome da serie, e adiciona uma opção padrão com value 0 e label "Selecione"
             response.data = response.data.$values.map((item: any) => {
-                return { value: item.id, label: item.nome };
+                return { value: item.id, label: `${item.cnae ? item.cnae + " - " : ''} ${item.nome}` };
             });
 
             response.data.unshift({ value: 0, label: 'Selecione' });
@@ -313,7 +323,7 @@ const FormularioEstabelecimentos: React.FC = () => {
         }));
 
         if (name === 'id_estado') {
-            loadCidades(parseInt(value));
+            loadCidades(value);
         }
 
         if (name === 'id_serie') {
@@ -377,12 +387,17 @@ const FormularioEstabelecimentos: React.FC = () => {
     const [cnpjError, setCnpjError] = useState<string | null>(null); // Estado para controlar o erro de CNPJ
 
     const handleCNPJBlur = async () => {
+
+        //exibir mensagem de carregando
+        setCnpjError("Carregando dados...");
+
         if (!validaCNPJ(formData.cnpj)) {
             setCnpjError('CNPJ inválido');
         } else {
-            setCnpjError(null);
+
             const dadosCNPJ = await buscarCNPJBrasilAPI(formData.cnpj);
             if (dadosCNPJ) {
+                setCnpjError(null);
                 console.log("Dados do CNPJ:", dadosCNPJ);
 
                 if (formData.logradouro === '') {
@@ -390,6 +405,38 @@ const FormularioEstabelecimentos: React.FC = () => {
                         ...prevState,
                         logradouro: `${dadosCNPJ.descricao_tipo_de_logradouro} ${dadosCNPJ.logradouro}`
                     }));
+                }
+
+                if (formData.numero === '') {
+                    setFormData(prevState => ({
+                        ...prevState,
+                        numero: dadosCNPJ.numero
+                    }));
+                }
+
+                if (formData.bairro === '') {
+                    setFormData(prevState => ({
+                        ...prevState,
+                        bairro: dadosCNPJ.bairro
+                    }));
+                }
+
+                if (formData.id_estado === '') {
+                    setFormData(prevState => ({
+                        ...prevState,
+                        id_estado: dadosCNPJ.uf
+                    }));
+
+                    loadCidades(dadosCNPJ.uf);
+
+                    //pegar 6 primeiros digitos do codigo_municipio_ibge
+                    const codigoMunicipioIbgeString = dadosCNPJ.codigo_municipio_ibge.toString().substring(0, 6);
+
+                    setFormData(prevState => ({
+                        ...prevState,
+                        id_cidade: codigoMunicipioIbgeString
+                    }));
+
                 }
 
                 if (formData.cep === '') {
@@ -448,8 +495,109 @@ const FormularioEstabelecimentos: React.FC = () => {
                     }));
                 }
 
+                if (formData.cnae_secundario === '') {
+
+                    // Verifica se o CNPJ possui CNAE secundário
+                    if (dadosCNPJ.cnaes_secundarios.length > 0) {
+                        // Se possuir, formata a string com os CNAEs secundários
+                        let cnaes_secundarios = '';
+                        dadosCNPJ.cnaes_secundarios.forEach((cnae: any, index: number) => {
+                            cnaes_secundarios += `${cnae.codigo} - ${cnae.descricao}`;
+                            if (index < dadosCNPJ.cnaes_secundarios.length - 1) {
+                                cnaes_secundarios += '\n';
+                            }
+                        });
+
+                        setFormData(prevState => ({
+                            ...prevState,
+                            cnae_secundario: cnaes_secundarios
+                        }));
+                    } else {
+                        setFormData(prevState => ({
+                            ...prevState,
+                            cnae_secundario: 'Não possui CNAE secundário'
+                        }));
+                    }
+                }
+
+                //verificar cnae principal e verificar níveis de risco
+                buscarTipoEstabelecimentoPorCNAE(dadosCNPJ.cnae_fiscal, 1);
+
+                dadosCNPJ.cnaes_secundarios.forEach((cnae: any, index: number) => {
+                    buscarTipoEstabelecimentoPorCNAE(cnae.codigo, 0);
+                });
+
+
+
+            } else {
+                setCnpjError('Não conseguimos importar dados do CNPJ');
             }
         }
+    };
+
+    const buscarTipoEstabelecimentoPorCNAE = async (cnae: string, principal: number) => {
+        axios.get(`${server.url}${server.endpoints.tipo_estabelecimento}/cnae/${cnae}`).then(response => {
+            // Supondo que 'response.data' seja o JSON retornado
+            const dadosCNAE = response.data || {};
+
+            // Verifica se o JSON não está vazio
+            if (Object.keys(dadosCNAE).length > 0) {
+                console.log("JSON contém dados:", dadosCNAE);
+            } else {
+                console.log("JSON está vazio ou não contém dados.");
+            }
+
+            if (Object.keys(dadosCNAE).length > 0) {
+
+                if (dadosCNAE.grau_Risco > formData.grau_risco) {
+                    setFormData(prevState => ({
+                        ...prevState,
+                        grau_risco: dadosCNAE.grau_Risco
+                    }));
+                }
+
+                if ((dadosCNAE.passivo_Analise_Projeto < formData.passivo_analise_projeto) || (formData.passivo_analise_projeto === '0')) {
+                    setFormData(prevState => ({
+                        ...prevState,
+                        passivo_analise_projeto: dadosCNAE.passivo_Analise_Projeto
+                    }));
+                }
+
+                if ((dadosCNAE.passivo_Alvara_Sanitario < formData.passivo_alvara_sanitario) || (formData.passivo_alvara_sanitario === '0')) {
+                    setFormData(prevState => ({
+                        ...prevState,
+                        passivo_alvara_sanitario: dadosCNAE.passivo_Alvara_Sanitario
+                    }));
+                }
+
+                if (cnae_encontrado === false) {
+                    //atualiza a série
+                    setFormData(prevState => ({
+                        ...prevState,
+                        id_serie: dadosCNAE.id_Serie
+                    }));
+
+                    loadTiposEstabelecimentos(dadosCNAE.id_Serie);
+
+                    //atualiza o tipo
+                    setFormData(prevState => ({
+                        ...prevState,
+                        id_tipo_estabelecimento: dadosCNAE.id
+                    }));
+
+                    setCnaeEncontrado(true);
+                }
+
+                console.log("Form Data:", formData);
+
+
+            } else {
+                setCnaeEncontrado(false);
+            }
+
+        }).catch(error => {
+            console.error("Erro:", error);
+        });
     };
 
     const buscarCNPJBrasilAPI = async (cnpj: string) => {
@@ -459,6 +607,7 @@ const FormularioEstabelecimentos: React.FC = () => {
             const response = await axios.get(url);
             return response.data; // Retorna os dados da API
         } catch (error) {
+            setCnpjError('Erro ao buscar CNPJ');
             console.error("Erro ao buscar CNPJ:", error);
             return null; // Retorna null em caso de erro
         }
@@ -473,9 +622,16 @@ const FormularioEstabelecimentos: React.FC = () => {
 
     const alvara = [
         { value: "0", label: "Selecione" },
-        { value: "1", label: "Sim" },
-        { value: "2", label: "Não" },
+        { value: "1", label: "Exigência de Alvará Sanitário" },
+        { value: "2", label: "Alvará sem inspeção prévia" },
+        { value: "3", label: "Dispensado de Alvará Sanitário" },
     ];
+
+    const analise_projeto = [
+        { value: "0", label: "Selecione" },
+        { value: "1", label: "Exigência de Análise de Projeto" },
+        { value: "2", label: "Dispensado de Análise de Projeto" },
+    ]
 
     const coleta_residuos = [
         { value: "0", label: "Selecione" },
@@ -737,7 +893,7 @@ const FormularioEstabelecimentos: React.FC = () => {
 
             <ContainerForm title="Informações Básicas">
                 <Row>
-                    <CampoTexto label="CNPJ (Apenas Números)" value={formData.cnpj} name="cnpj" tipo="text" className="col-md-3" onChange={handleChange} onBlur={
+                    <CampoTexto label="CNPJ (Apenas Números)" value={formData.cnpj} name="cnpj" tipo="text" className="col-md-6" onChange={handleChange} onBlur={
                         handleCNPJBlur
                     } >
                         {cnpjError && <small style={{ color: 'red' }}>{cnpjError}</small>}
@@ -750,13 +906,16 @@ const FormularioEstabelecimentos: React.FC = () => {
                     {/* <CampoSelect label="Cidade" name="cidade" options={cidades} className="col-md-4" onChange={handleChange} /> */}
                 </Row>
                 <Row>
-                    <CampoTexto label="CNAE" value={formData.cnae} name="cnae" tipo="text" className="col-md-3" onChange={handleChange} />
                     <CampoTexto label="Início Funcionamento" value={formData.data_inicio_funcionamento ? new Date(formData.data_inicio_funcionamento).toISOString().split('T')[0] : ''} name="data_inicio_funcionamento" tipo="date" className="col-md-3" onChange={handleChange} />
                     <CampoSelect label="Grau de Risco" value={formData.grau_risco} name="grau_risco" options={graus_risco} className="col-md-3" onChange={handleChange} />
+                    <CampoTexto label="Inscrição Municipal" name="inscricao_municipal" value={formData.inscricao_municipal} tipo="text" className="col-md-3" onChange={handleChange} />
                     <CampoTexto label="Inscrição Estadual" name="inscricao_estadual" value={formData.inscricao_estadual} tipo="text" className="col-md-3" onChange={handleChange} />
                 </Row>
                 <Row>
-                    <CampoTexto label="Inscrição Municipal" name="inscricao_municipal" value={formData.inscricao_municipal} tipo="text" className="col-md-3" onChange={handleChange} />
+                    <CampoTexto label="CNAE" value={formData.cnae} name="cnae" tipo="text" className="col-md-3" onChange={handleChange} />
+                </Row>
+                <Row>
+                    <CampoAreaTexto label="CNAE Secundário" name="cnae_secundario" className="col-12" value={formData.cnae_secundario} onChange={handleChange} />
                 </Row>
             </ContainerForm>
 
@@ -791,6 +950,7 @@ const FormularioEstabelecimentos: React.FC = () => {
                     <CampoSelect label="Forma de Abastecimento" name="forma_abastecimento" value={formData.forma_abastecimento} options={forma_abastecimento} className="col-md-4" onChange={handleChange} />
                 </Row>
                 <Row>
+                    <CampoSelect label="Passivo de Análise de Projeto?" name="passivo_analise_projeto" value={formData.passivo_analise_projeto} options={analise_projeto} className="col-md-4" onChange={handleChange} />
                     <CampoSelect label="Série" name="id_serie" value={formData.id_serie} options={Series} className="col-md-4" onChange={handleChange} />
                     <CampoSelect label="Tipo de Estabelecimento" name="id_tipo_estabelecimento" value={formData.id_tipo_estabelecimento} options={TipoEstabelecimento} className="col-md-4" onChange={handleChange} />
                 </Row>
