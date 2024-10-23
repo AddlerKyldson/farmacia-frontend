@@ -17,6 +17,7 @@ import { useAuth } from "../../../context/AuthContext";
 const FormularioDenuncia: React.FC = () => {
     const [Id, setId] = useState(0);
     const [id_usuario, setId_Usuario] = useState(0);
+    const [Estabelecimentos, setEstabelecimentos] = useState([]);
     const { user } = useAuth();
 
     const [formData, setFormData] = useState({
@@ -35,6 +36,7 @@ const FormularioDenuncia: React.FC = () => {
         orgao_Encaminhamento: '0',
         data_Atendimento: null,
         data_Encaminhamento: null,
+        id_estabelecimento: '0',
         motivo_Nao_Atendimento: '0',
         texto_Denuncia: '',
         status: 1, // default value
@@ -116,6 +118,34 @@ const FormularioDenuncia: React.FC = () => {
     useEffect(() => {
         //console.log("FORMDATA atualizado:", formData);
     }, [formData]);
+
+    //Carrega Estabelecimentos
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+
+                const response = await axios.get(
+                    `${server.url}${server.endpoints.estabelecimento}`,
+                    {
+                        //parâmetros
+                    }
+                );
+
+                response.data = response.data.dados.$values.map((item: any) => {
+                    return { value: item.id, label: item.razao_social };
+                });
+
+                response.data.unshift({ value: 0, label: 'Selecione' });
+
+                setEstabelecimentos(response.data);
+
+            } catch (error) {
+                console.error("Erro:", error);
+            }
+        };
+
+        fetchData();
+    }, []);
 
     useEffect(() => {
 
@@ -494,6 +524,10 @@ const FormularioDenuncia: React.FC = () => {
                     <CampoAreaTexto label="Denúncia" value={formData.texto_Denuncia} name="texto_Denuncia" className="col-md-12" onChange={handleChange}>
                     </CampoAreaTexto>
                 </Row>
+            </ContainerForm>
+
+            <ContainerForm title="Estabelecimento (Opcional)">
+                <CampoSelect label="Estabelecimento" value={formData.id_estabelecimento} name="id_estabelecimento" options={Estabelecimentos} className="col-md-4" onChange={handleChange} />
             </ContainerForm>
 
             <ContainerForm title="Informações do denunciante">
