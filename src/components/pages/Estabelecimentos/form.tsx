@@ -47,7 +47,7 @@ const FormularioEstabelecimentos: React.FC = () => {
         cnae: '',
         cnae_secundario: '',
         passivo_analise_projeto: '0',
-        data_inicio_funcionamento: '',
+        data_inicio_funcionamento: null,
         grau_risco: '0',
         inscricao_estadual: '',
         inscricao_municipal: '',
@@ -71,7 +71,14 @@ const FormularioEstabelecimentos: React.FC = () => {
         slug: '',
         observacoes: '',
         estabelecimento_Responsavel_Legal: responsaveisLegais,
-        estabelecimento_Responsavel_Tecnico: responsaveisTecnicos
+        estabelecimento_Responsavel_Tecnico: responsaveisTecnicos,
+        restaurantes_local: '0',
+        restaurantes_tamanho: '0',
+        restaurantes_pavimentos: '0',
+        restaurantes_lotacao: '0',
+        restaurantes_subsolo: '0',
+        restaurantes_combustivel: '0',
+        restaurantes_gas: '0'
     });
 
     const [Series, setSeries] = useState<any[]>([]);
@@ -152,6 +159,16 @@ const FormularioEstabelecimentos: React.FC = () => {
                 loadCidades(response.data.id_estado);
                 loadTiposEstabelecimentos(response.data.id_serie);
 
+                const data = response.data;
+
+                if (data.restaurantes_tamanho === 1) {
+                    //Exibir div .se_restaurante_tamanho
+                    document.querySelector('.se_restaurante_tamanho')?.classList.remove('d-none');
+                } else {
+                    //Ocultar div .se_restaurante_tamanho
+                    document.querySelector('.se_restaurante_tamanho')?.classList.add('d-none');
+                }
+
                 try {
                     setFormData(response.data);
                     console.log("Dados:", response.data);
@@ -166,6 +183,9 @@ const FormularioEstabelecimentos: React.FC = () => {
         } else {
             setCidades([{ value: 0, label: 'Selecione o estado' }]);
             setTipoEstabelecimento([{ value: 0, label: 'Selecione a série' }]);
+
+            //Ocultar divs se_restaurante_tamanho
+            document.querySelector('.se_restaurante_tamanho')?.classList.add('d-none');
         }
     };
 
@@ -337,6 +357,16 @@ const FormularioEstabelecimentos: React.FC = () => {
             }));
         }
 
+        if (name === 'restaurantes_tamanho') {
+            if (value === '1') {
+                //Exibir div .se_restaurante_tamanho
+                document.querySelector('.se_restaurante_tamanho')?.classList.remove('d-none');
+            } else {
+                //Ocultar div .se_restaurante_tamanho
+                document.querySelector('.se_restaurante_tamanho')?.classList.add('d-none');
+            }
+        }
+
     };
 
     const formataCNPJ = (cnpj: string) => {
@@ -456,7 +486,7 @@ const FormularioEstabelecimentos: React.FC = () => {
                 if (formData.cnae === '') {
                     setFormData(prevState => ({
                         ...prevState,
-                        cnae: `${dadosCNPJ.cnae_fiscal}`
+                        cnae: `${dadosCNPJ.cnae_fiscal} - ${dadosCNPJ.cnae_fiscal_descricao}`
                     }));
                 }
 
@@ -668,6 +698,12 @@ const FormularioEstabelecimentos: React.FC = () => {
         { value: "9", label: "Superior Completo" },
     ];
 
+    const SimNao = [
+        { value: "0", label: "Selecione" },
+        { value: "1", label: "Sim" },
+        { value: "2", label: "Não" },
+    ];
+
     function validaCampos(value = '', nome_campo = '', obrigatorio = false, tamanho = 0) {
         let erro = false;
         let mensagem_erro = '';
@@ -773,7 +809,7 @@ const FormularioEstabelecimentos: React.FC = () => {
         const nome_fantasia = validaCampos(formData.nome_fantasia, 'Nome Fantasia', true);
         const cnpj = validaCampos(formData.cnpj, 'CNPJ', true, 14);
         const cnae = validaCampos(formData.cnae, 'CNAE', true);
-        const data_inicio_funcionamento = validaCampos(formData.data_inicio_funcionamento, 'Data Início Funcionamento', true);
+        /* const data_inicio_funcionamento = validaCampos(formData.data_inicio_funcionamento, 'Data Início Funcionamento', true); */
         const logradouro = validaCampos(formData.logradouro, 'Logradouro', true);
         const estado = validaCampos(formData.id_estado, 'Estado', true);
         const cidade = validaCampos(formData.id_cidade, 'Cidade', true);
@@ -782,8 +818,8 @@ const FormularioEstabelecimentos: React.FC = () => {
         const telefone = validaCampos(formData.telefone, 'Telefone', true);
         const email = validaCampos(formData.email, 'E-mail', true);
 
-        if (razao_social.erro) mensagem_erro.push(razao_social.mensagem_erro);
-        if (cnpj.erro) mensagem_erro.push(cnpj.mensagem_erro);
+        /* if (razao_social.erro) mensagem_erro.push(razao_social.mensagem_erro);
+        if (cnpj.erro) mensagem_erro.push(cnpj.mensagem_erro); */
         if (logradouro.erro) mensagem_erro.push(logradouro.mensagem_erro);
         if (estado.erro) mensagem_erro.push(estado.mensagem_erro);
         if (cidade.erro) mensagem_erro.push(cidade.mensagem_erro);
@@ -912,7 +948,7 @@ const FormularioEstabelecimentos: React.FC = () => {
                     <CampoTexto label="Inscrição Estadual" name="inscricao_estadual" value={formData.inscricao_estadual} tipo="text" className="col-md-3" onChange={handleChange} />
                 </Row>
                 <Row>
-                    <CampoTexto label="CNAE" value={formData.cnae} name="cnae" tipo="text" className="col-md-3" onChange={handleChange} />
+                    <CampoTexto label="CNAE" value={formData.cnae} name="cnae" tipo="text" className="col-md-12" onChange={handleChange} />
                 </Row>
                 <Row>
                     <CampoAreaTexto label="CNAE Secundário" name="cnae_secundario" className="col-12" value={formData.cnae_secundario} onChange={handleChange} />
@@ -954,6 +990,27 @@ const FormularioEstabelecimentos: React.FC = () => {
                     <CampoSelect label="Série" name="id_serie" value={formData.id_serie} options={Series} className="col-md-4" onChange={handleChange} />
                     <CampoSelect label="Tipo de Estabelecimento" name="id_tipo_estabelecimento" value={formData.id_tipo_estabelecimento} options={TipoEstabelecimento} className="col-md-4" onChange={handleChange} />
                 </Row>
+            </ContainerForm>
+
+            <ContainerForm title="Restaurantes">
+                <Row>
+                    <CampoSelect label="Na residência do empreendedor, sem recepção?" name="restaurantes_local" value={formData.restaurantes_local} options={SimNao} className="col-md-4" onChange={handleChange} />
+                </Row>
+                <Row>
+                    <CampoSelect label="Espaço ocupado pela atividade de até 200m²?" name="restaurantes_tamanho" value={formData.restaurantes_tamanho} options={SimNao} className="col-md-4" onChange={handleChange} />
+                </Row>
+                <div className="se_restaurante_tamanho">
+                    <Row >
+                        <CampoSelect label="Edificação tem mais que 3 pavimentos?" name="restaurantes_pavimentos" value={formData.restaurantes_pavimentos} options={SimNao} className="col-md-4" onChange={handleChange} />
+                        <CampoSelect label="Capacidade para mais de 100 pessoas?" name="restaurantes_lotacao" value={formData.restaurantes_lotacao} options={SimNao} className="col-md-4" onChange={handleChange} />
+                        <CampoSelect label="Estacionamento no subsolo?" name="restaurantes_subsolo" value={formData.restaurantes_subsolo} options={SimNao} className="col-md-4" onChange={handleChange} />
+                    </Row>
+                    <Row>
+                        <CampoSelect label="Possui líquido inflamável ou combustível acima de 1000 L (mil litros)?" name="restaurantes_combustivel" value={formData.restaurantes_combustivel} options={SimNao} className="col-md-4" onChange={handleChange} />
+                        <CampoSelect label="Possui gás liquefeito de petróleo (GLP) acima de 190 kg (cento e noventa
+quilogramas)?" name="restaurantes_gas" value={formData.restaurantes_gas} options={SimNao} className="col-md-4" onChange={handleChange} />
+                    </Row>
+                </div>
             </ContainerForm>
 
             <ContainerForm title="Observações">
